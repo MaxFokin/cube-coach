@@ -375,6 +375,21 @@ function setLang(code) {
   document.documentElement.lang = code;
   document.documentElement.dir = LANGS[code].dir;
 }
+// The switch: one segmented control under the brand, built once from LANGS. CSS shows it on the
+// welcome screen only. Each segment is the language's flag over its code; the full name is the label.
+let langsEl = null;
+function refreshLangs() {
+  if (!langsEl) {
+    langsEl = make('langs');
+    langsEl.setAttribute('role', 'group');
+    langsEl.innerHTML = Object.keys(LANGS).map((code) =>
+      `<button class="lang" type="button" data-lang="${code}" lang="${code}" aria-label="${LANGS[code].name}"><i>${LANGS[code].flag}</i>${LANGS[code].code}</button>`).join('');
+    langsEl.querySelectorAll('.lang').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); disarm(); render(false); }));
+    $('.top').appendChild(langsEl);
+  }
+  langsEl.setAttribute('aria-label', t('language'));
+  langsEl.querySelectorAll('.lang').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+}
 
 // ===== Screens =====
 const progress = (n, i, label, extra = '') => {
@@ -441,6 +456,7 @@ function render(animate) {
   spinnerEl.classList.remove('spinning');
   useModel(app.cube);
   appEl.dataset.screen = app.screen;
+  refreshLangs();
   const big = ['welcome', 'checkTop', 'checkBottom', 'hold', 'move', 'done', 'solving', 'solverError'].includes(app.screen);
   if (big) appEl.dataset.big = ''; else delete appEl.dataset.big;
   ({
@@ -460,10 +476,7 @@ function screenWelcome() {
     <div class="choose">
       <button class="tile" id="pick2" type="button">${ico(2, ['G', 'Y', 'R', 'B'])}<strong>2×2</strong><small>${t('tile2')}</small></button>
       <button class="tile" id="pick3" type="button">${ico(3, ['W', 'R', 'G', 'B', 'G', 'Y', 'O', 'W', 'R'])}<strong>3×3</strong><small>${t('tile3')}</small></button>
-    </div>
-    <div class="langs" role="group" aria-label="${t('language')}">${Object.keys(LANGS).map((code) =>
-      `<button class="lang" type="button" data-lang="${code}" lang="${code}" aria-pressed="${code === lang}">${LANGS[code].name}</button>`).join('')}</div>`;
-  panelEl.querySelectorAll('.lang').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); disarm(); render(false); }));
+    </div>`;
   on('pick2', () => { app.cube = 2; resetAll(); go('side'); });
   on('pick3', () => { app.cube = 3; resetAll(); preloadSolver().catch(() => {}); go('side'); });
 }

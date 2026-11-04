@@ -47,7 +47,10 @@ async def flow2(browser, code):
     assert await page.get_attribute('html', 'lang') == code
     assert await page.get_attribute('html', 'dir') == ('rtl' if code == 'he' else 'ltr')
     assert await page.get_attribute(f'.lang[data-lang="{code}"]', 'aria-pressed') == 'true'
+    assert await page.query_selector('.top .lang[data-lang="en"]'), 'the switch lives in the header'
+    assert (await page.text_content(f'.lang[data-lang="{code}"]')).strip().endswith(code.upper()), 'each segment shows its code'
     await page.tap('#pick2'); await page.wait_for_timeout(300)
+    assert not await page.is_visible('.langs'), 'the switch shows on the welcome screen only'
     assert await direction(page, '.face-grid') == 'ltr', 'the grid never mirrors'
     await paint(page, MAX)
     if code == 'en': assert 'Is this your top?' in await page.text_content('h1')

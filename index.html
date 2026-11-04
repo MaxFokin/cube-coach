@@ -281,14 +281,20 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
 .tile strong { font: 600 28px/1 var(--display); letter-spacing: -0.01em; }
 .tile small { font: 400 15px/1.2 var(--text); color: var(--ink-soft); }
 
-/* Language switch, welcome screen only */
-.langs { display: flex; justify-content: center; gap: 8px; }
+/* Language switch: one small segmented control under the brand, welcome screen only.
+   The header never mirrors, so the brand and the switch stay top-left in Hebrew too. */
+.top { direction: ltr; flex-wrap: wrap; row-gap: 6px; }
+.langs { display: none; flex-basis: 100%; order: 3; }
+.app[data-screen="welcome"] .langs { display: flex; }
 .lang {
-  appearance: none; cursor: pointer; background: transparent; color: var(--ink-soft);
-  border: 2px solid var(--line); border-radius: 12px; padding: 7px 12px;
-  font: 500 15px/1 var(--display); touch-action: manipulation;
+  appearance: none; cursor: pointer; display: grid; justify-items: center; gap: 1px; padding: 3px 9px 4px;
+  font: 600 9px/1 var(--display); letter-spacing: .08em; color: var(--ink-soft); background: var(--paper);
+  border: 2px solid var(--line); border-radius: 0; margin-inline-start: -2px; touch-action: manipulation;
 }
-.lang[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); font-weight: 700; }
+.lang:first-child { border-radius: 999px 0 0 999px; margin-inline-start: 0; }
+.lang:last-child { border-radius: 0 999px 999px 0; }
+.lang i { font: 400 15px/1 system-ui, sans-serif; font-style: normal; }
+.lang[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); position: relative; z-index: 1; }
 
 /* 3x3 faces */
 .face-grid.n3 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 7px; padding: 9px; }
@@ -969,7 +975,11 @@ function findFace(px, w, h) {
 // ({ one, two, few, many, other }; other is required), or a per-color set (W Y R O B G). Sets may
 // nest either way. t(key, vars) picks the current language, falls back to English, fills {color}
 // and {Color} with the color's name, and every other {name} from vars. No DOM in this file.
-const LANGS = { en: { name: 'English', dir: 'ltr' }, he: { name: 'עברית', dir: 'rtl' }, pl: { name: 'Polski', dir: 'ltr' } };
+const LANGS = {
+  en: { name: 'English', dir: 'ltr', flag: '🇬🇧', code: 'EN' },
+  he: { name: 'עברית', dir: 'rtl', flag: '🇮🇱', code: 'HE' },
+  pl: { name: 'Polski', dir: 'ltr', flag: '🇵🇱', code: 'PL' },
+};
 let lang = 'en';
 const useLang = (code) => { lang = code; };
 const PLURALS = {};
@@ -2147,6 +2157,21 @@ function setLang(code) {
   document.documentElement.lang = code;
   document.documentElement.dir = LANGS[code].dir;
 }
+// The switch: one segmented control under the brand, built once from LANGS. CSS shows it on the
+// welcome screen only. Each segment is the language's flag over its code; the full name is the label.
+let langsEl = null;
+function refreshLangs() {
+  if (!langsEl) {
+    langsEl = make('langs');
+    langsEl.setAttribute('role', 'group');
+    langsEl.innerHTML = Object.keys(LANGS).map((code) =>
+      `<button class="lang" type="button" data-lang="${code}" lang="${code}" aria-label="${LANGS[code].name}"><i>${LANGS[code].flag}</i>${LANGS[code].code}</button>`).join('');
+    langsEl.querySelectorAll('.lang').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); disarm(); render(false); }));
+    $('.top').appendChild(langsEl);
+  }
+  langsEl.setAttribute('aria-label', t('language'));
+  langsEl.querySelectorAll('.lang').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+}
 
 // ===== Screens =====
 const progress = (n, i, label, extra = '') => {
@@ -2213,6 +2238,7 @@ function render(animate) {
   spinnerEl.classList.remove('spinning');
   useModel(app.cube);
   appEl.dataset.screen = app.screen;
+  refreshLangs();
   const big = ['welcome', 'checkTop', 'checkBottom', 'hold', 'move', 'done', 'solving', 'solverError'].includes(app.screen);
   if (big) appEl.dataset.big = ''; else delete appEl.dataset.big;
   ({
@@ -2232,10 +2258,7 @@ function screenWelcome() {
     <div class="choose">
       <button class="tile" id="pick2" type="button">${ico(2, ['G', 'Y', 'R', 'B'])}<strong>2×2</strong><small>${t('tile2')}</small></button>
       <button class="tile" id="pick3" type="button">${ico(3, ['W', 'R', 'G', 'B', 'G', 'Y', 'O', 'W', 'R'])}<strong>3×3</strong><small>${t('tile3')}</small></button>
-    </div>
-    <div class="langs" role="group" aria-label="${t('language')}">${Object.keys(LANGS).map((code) =>
-      `<button class="lang" type="button" data-lang="${code}" lang="${code}" aria-pressed="${code === lang}">${LANGS[code].name}</button>`).join('')}</div>`;
-  panelEl.querySelectorAll('.lang').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); disarm(); render(false); }));
+    </div>`;
   on('pick2', () => { app.cube = 2; resetAll(); go('side'); });
   on('pick3', () => { app.cube = 3; resetAll(); preloadSolver().catch(() => {}); go('side'); });
 }

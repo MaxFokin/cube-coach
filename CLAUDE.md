@@ -107,10 +107,14 @@ The current language is `lang` in `strings.js` (`useLang` sets it, no DOM). `set
 `ui.js` also saves it under the localStorage key `cube-coach-lang`, apart from the progress record,
 so `resetAll()` and `restore()` never touch it, and sets `<html lang dir>`. `main.js` applies the
 saved language before `restore()` and the first render; the default is English and the phone's
-language is never guessed. The switch is a row of `.lang` buttons on the welcome screen only, built
-from `LANGS` in its order, each labelled with the language's own name and `aria-pressed`.
+language is never guessed. The switch is one small segmented control under the brand in the header,
+built once from `LANGS` (`refreshLangs`): each segment shows the language's flag over its code
+(`LANGS[code].flag`, `.code`), the full name is its `aria-label`, and `aria-pressed` marks the
+current one. CSS shows it on the welcome screen only. Max chose this over name buttons on
+2026-11-04 after seeing mockups of five variants.
 
-Hebrew sets `dir="rtl"`; text, headings, buttons and the camera sheet follow. Everything that shows
+Hebrew sets `dir="rtl"`; text, headings, buttons and the camera sheet follow. The header never
+mirrors (`.top` is pinned left-to-right), so the brand and the switch stay top-left. Everything that shows
 the physical cube is pinned to `direction: ltr` in `base.css`: `.stage`, `.face-grid`, `.grid-row`,
 `.cam-view`, `.cam-guide`, `.move-icon`, `.chips`, `.bar`, `.palette`, `.key` (also
 `unicode-bidi: isolate`, so `U′` never renders as `′U`) and `.langs`. Fredoka already carries

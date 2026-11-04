@@ -14,14 +14,20 @@
 .tile strong { font: 600 28px/1 var(--display); letter-spacing: -0.01em; }
 .tile small { font: 400 15px/1.2 var(--text); color: var(--ink-soft); }
 
-/* Language switch, welcome screen only */
-.langs { display: flex; justify-content: center; gap: 8px; }
+/* Language switch: one small segmented control under the brand, welcome screen only.
+   The header never mirrors, so the brand and the switch stay top-left in Hebrew too. */
+.top { direction: ltr; flex-wrap: wrap; row-gap: 6px; }
+.langs { display: none; flex-basis: 100%; order: 3; }
+.app[data-screen="welcome"] .langs { display: flex; }
 .lang {
-  appearance: none; cursor: pointer; background: transparent; color: var(--ink-soft);
-  border: 2px solid var(--line); border-radius: 12px; padding: 7px 12px;
-  font: 500 15px/1 var(--display); touch-action: manipulation;
+  appearance: none; cursor: pointer; display: grid; justify-items: center; gap: 1px; padding: 3px 9px 4px;
+  font: 600 9px/1 var(--display); letter-spacing: .08em; color: var(--ink-soft); background: var(--paper);
+  border: 2px solid var(--line); border-radius: 0; margin-inline-start: -2px; touch-action: manipulation;
 }
-.lang[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); font-weight: 700; }
+.lang:first-child { border-radius: 999px 0 0 999px; margin-inline-start: 0; }
+.lang:last-child { border-radius: 0 999px 999px 0; }
+.lang i { font: 400 15px/1 system-ui, sans-serif; font-style: normal; }
+.lang[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); position: relative; z-index: 1; }
 
 /* 3x3 faces */
 .face-grid.n3 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 7px; padding: 9px; }

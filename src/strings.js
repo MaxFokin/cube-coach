@@ -3,7 +3,11 @@
 // ({ one, two, few, many, other }; other is required), or a per-color set (W Y R O B G). Sets may
 // nest either way. t(key, vars) picks the current language, falls back to English, fills {color}
 // and {Color} with the color's name, and every other {name} from vars. No DOM in this file.
-const LANGS = { en: { name: 'English', dir: 'ltr' }, he: { name: 'עברית', dir: 'rtl' }, pl: { name: 'Polski', dir: 'ltr' } };
+const LANGS = {
+  en: { name: 'English', dir: 'ltr', flag: '🇬🇧', code: 'EN' },
+  he: { name: 'עברית', dir: 'rtl', flag: '🇮🇱', code: 'HE' },
+  pl: { name: 'Polski', dir: 'ltr', flag: '🇵🇱', code: 'PL' },
+};
 let lang = 'en';
 const useLang = (code) => { lang = code; };
 const PLURALS = {};
