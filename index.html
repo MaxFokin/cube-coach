@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Cube Coach">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Assistant:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --desk: #EDF0F5;
@@ -46,6 +46,8 @@
   --glow: rgba(110, 130, 185, .24); --shadow: rgba(0, 0, 0, .6);
   color-scheme: dark;
 }
+/* Hebrew text: Andika has no Hebrew glyphs, Fredoka (the display font) does. */
+:root[lang="he"] { --text: 'Assistant', 'Arial Hebrew', system-ui, sans-serif; }
 :root {
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
@@ -212,7 +214,7 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
 }
 
 /* Welcome steps */
-.howto { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 10px; text-align: left; max-width: 330px; }
+.howto { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 10px; text-align: start; max-width: 330px; }
 .howto li { display: flex; align-items: center; gap: 12px; }
 .howto b {
   flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
@@ -222,8 +224,8 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
 /* Moves */
 .move-head { display: flex; align-items: center; justify-content: center; gap: 14px; }
 .move-icon { width: 58px; height: 58px; flex: none; }
-.move-head h1 { text-align: left; }
-.help { text-align: left; font-size: 16px; background: var(--paper); border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; }
+.move-head h1 { text-align: start; }
+.help { text-align: start; font-size: 16px; background: var(--paper); border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; }
 .help p { margin: 0; }
 
 /* Confetti */
@@ -233,6 +235,10 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
   animation: fall var(--t) cubic-bezier(.25, .6, .45, 1) var(--d) forwards;
 }
 @keyframes fall { to { transform: translate3d(var(--x), 112vh, 0) rotate(var(--r)); } }
+
+/* Right to left: words follow the language; the cube, its grids and the notation never mirror */
+.stage, .face-grid, .grid-row, .cam-view, .cam-guide, .move-icon, .chips, .bar, .palette, .key, .langs { direction: ltr; }
+.key { unicode-bidi: isolate; }
 
 @media (max-width: 360px) {
   .app { padding-left: 14px; padding-right: 14px; }
@@ -272,6 +278,15 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
 .tile .ico.n3 i { border-radius: 3px; }
 .tile strong { font: 600 28px/1 var(--display); letter-spacing: -0.01em; }
 .tile small { font: 400 15px/1.2 var(--text); color: var(--ink-soft); }
+
+/* Language switch, welcome screen only */
+.langs { display: flex; justify-content: center; gap: 8px; }
+.lang {
+  appearance: none; cursor: pointer; background: transparent; color: var(--ink-soft);
+  border: 2px solid var(--line); border-radius: 12px; padding: 7px 12px;
+  font: 500 15px/1 var(--display); touch-action: manipulation;
+}
+.lang[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); font-weight: 700; }
 
 /* 3x3 faces */
 .face-grid.n3 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 7px; padding: 9px; }
@@ -1150,6 +1165,10 @@ const STRINGS = {
     en: 'Copy all 6 sides',
     he: 'העתק את כל 6 הצדדים',
   },
+  language: {
+    en: 'Language',
+    he: 'שפה',
+  },
   // Copying a side
   sideOf: {
     en: 'Side {n} of {total}',
@@ -1962,6 +1981,16 @@ function restore() {
   if (d.screen === 'side' || full) app.screen = 'side';
 }
 
+// ===== Language =====
+// Kept under its own key, apart from the progress record, so Start over and restore() never touch it.
+const LANG_KEY = 'cube-coach-lang';
+function setLang(code) {
+  useLang(code);
+  try { localStorage.setItem(LANG_KEY, code); } catch (e) { /* storage unavailable */ }
+  document.documentElement.lang = code;
+  document.documentElement.dir = LANGS[code].dir;
+}
+
 // ===== Screens =====
 const progress = (n, i, label, extra = '') => {
   const track = n <= 12
@@ -2046,7 +2075,10 @@ function screenWelcome() {
     <div class="choose">
       <button class="tile" id="pick2" type="button">${ico(2, ['G', 'Y', 'R', 'B'])}<strong>2×2</strong><small>${t('tile2')}</small></button>
       <button class="tile" id="pick3" type="button">${ico(3, ['W', 'R', 'G', 'B', 'G', 'Y', 'O', 'W', 'R'])}<strong>3×3</strong><small>${t('tile3')}</small></button>
-    </div>`;
+    </div>
+    <div class="langs" role="group" aria-label="${t('language')}">${Object.keys(LANGS).map((code) =>
+      `<button class="lang" type="button" data-lang="${code}" lang="${code}" aria-pressed="${code === lang}">${LANGS[code].name}</button>`).join('')}</div>`;
+  panelEl.querySelectorAll('.lang').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); disarm(); render(false); }));
   on('pick2', () => { app.cube = 2; resetAll(); go('side'); });
   on('pick3', () => { app.cube = 3; resetAll(); preloadSolver().catch(() => {}); go('side'); });
 }
@@ -2754,6 +2786,9 @@ window.addEventListener('resize', () => {
   }, 200);
 });
 
+let savedLang = null;
+try { savedLang = localStorage.getItem(LANG_KEY); } catch (e) { /* storage unavailable */ }
+setLang(savedLang in LANGS ? savedLang : 'en');
 disarm();
 restore();
 useModel(app.cube);

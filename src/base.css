@@ -34,6 +34,8 @@
   --glow: rgba(110, 130, 185, .24); --shadow: rgba(0, 0, 0, .6);
   color-scheme: dark;
 }
+/* Hebrew text: Andika has no Hebrew glyphs, Fredoka (the display font) does. */
+:root[lang="he"] { --text: 'Assistant', 'Arial Hebrew', system-ui, sans-serif; }
 :root {
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
@@ -200,7 +202,7 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
 }
 
 /* Welcome steps */
-.howto { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 10px; text-align: left; max-width: 330px; }
+.howto { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 10px; text-align: start; max-width: 330px; }
 .howto li { display: flex; align-items: center; gap: 12px; }
 .howto b {
   flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
@@ -210,8 +212,8 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
 /* Moves */
 .move-head { display: flex; align-items: center; justify-content: center; gap: 14px; }
 .move-icon { width: 58px; height: 58px; flex: none; }
-.move-head h1 { text-align: left; }
-.help { text-align: left; font-size: 16px; background: var(--paper); border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; }
+.move-head h1 { text-align: start; }
+.help { text-align: start; font-size: 16px; background: var(--paper); border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; }
 .help p { margin: 0; }
 
 /* Confetti */
@@ -221,6 +223,10 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
   animation: fall var(--t) cubic-bezier(.25, .6, .45, 1) var(--d) forwards;
 }
 @keyframes fall { to { transform: translate3d(var(--x), 112vh, 0) rotate(var(--r)); } }
+
+/* Right to left: words follow the language; the cube, its grids and the notation never mirror */
+.stage, .face-grid, .grid-row, .cam-view, .cam-guide, .move-icon, .chips, .bar, .palette, .key, .langs { direction: ltr; }
+.key { unicode-bidi: isolate; }
 
 @media (max-width: 360px) {
   .app { padding-left: 14px; padding-right: 14px; }

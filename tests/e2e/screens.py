@@ -42,7 +42,8 @@ async def walk(browser, lang):
     shots = []
     async def shot(page, label, cam=False):
         await page.wait_for_timeout(150)
-        text = await page.evaluate('sel => document.querySelector(sel).innerText', '.cam' if cam else '#panel')
+        # The language switch shows every language's own name, so its text is left out.
+        text = await page.evaluate("sel => { const el = document.querySelector(sel), l = el.querySelector('.langs'); return l ? el.innerText.replace('\\n' + l.innerText, '').replace(l.innerText, '') : el.innerText; }", '.cam' if cam else '#panel')
         if not cam: text += '\n' + (await page.text_content('#restart'))
         h = await page.evaluate('[document.documentElement.scrollHeight, document.documentElement.scrollWidth, window.innerWidth]')
         shots.append((label, text, h[0], h[1] <= h[2]))

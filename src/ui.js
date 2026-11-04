@@ -367,6 +367,16 @@ function restore() {
   if (d.screen === 'side' || full) app.screen = 'side';
 }
 
+// ===== Language =====
+// Kept under its own key, apart from the progress record, so Start over and restore() never touch it.
+const LANG_KEY = 'cube-coach-lang';
+function setLang(code) {
+  useLang(code);
+  try { localStorage.setItem(LANG_KEY, code); } catch (e) { /* storage unavailable */ }
+  document.documentElement.lang = code;
+  document.documentElement.dir = LANGS[code].dir;
+}
+
 // ===== Screens =====
 const progress = (n, i, label, extra = '') => {
   const track = n <= 12
@@ -451,7 +461,10 @@ function screenWelcome() {
     <div class="choose">
       <button class="tile" id="pick2" type="button">${ico(2, ['G', 'Y', 'R', 'B'])}<strong>2×2</strong><small>${t('tile2')}</small></button>
       <button class="tile" id="pick3" type="button">${ico(3, ['W', 'R', 'G', 'B', 'G', 'Y', 'O', 'W', 'R'])}<strong>3×3</strong><small>${t('tile3')}</small></button>
-    </div>`;
+    </div>
+    <div class="langs" role="group" aria-label="${t('language')}">${Object.keys(LANGS).map((code) =>
+      `<button class="lang" type="button" data-lang="${code}" lang="${code}" aria-pressed="${code === lang}">${LANGS[code].name}</button>`).join('')}</div>`;
+  panelEl.querySelectorAll('.lang').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); disarm(); render(false); }));
   on('pick2', () => { app.cube = 2; resetAll(); go('side'); });
   on('pick3', () => { app.cube = 3; resetAll(); preloadSolver().catch(() => {}); go('side'); });
 }

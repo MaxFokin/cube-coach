@@ -201,6 +201,10 @@ const STRINGS = {
     en: 'Copy all 6 sides',
     he: 'העתק את כל 6 הצדדים',
   },
+  language: {
+    en: 'Language',
+    he: 'שפה',
+  },
   // Copying a side
   sideOf: {
     en: 'Side {n} of {total}',

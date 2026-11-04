@@ -24,6 +24,9 @@ window.addEventListener('resize', () => {
   }, 200);
 });
 
+let savedLang = null;
+try { savedLang = localStorage.getItem(LANG_KEY); } catch (e) { /* storage unavailable */ }
+setLang(savedLang in LANGS ? savedLang : 'en');
 disarm();
 restore();
 useModel(app.cube);
