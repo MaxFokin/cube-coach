@@ -4,7 +4,7 @@ Cube Coach is a one-file web app that walks a child through solving a 2x2 or 3x3
 child copies the cube's colors (by tapping or with the camera), the app checks that the copy is a real
 cube, works out a short solution, and shows every turn on an animated 3D cube with an arrow.
 Max (GitHub `MaxFokin`) built it for Max's son in a Claude chat on 2026-10-31. On 2026-11-04 Claude
-Code reviewed every file, fixed what was found, and published it to GitHub Pages.
+Code reviewed every file, fixed what was found, and pushed it to GitHub.
 
 This file is the project's memory. Everything in it is current and was verified on 2026-11-04.
 When a fact here changes, change it here in the same commit.
@@ -201,9 +201,14 @@ buttons stay visible at 375x667. Everything fits at 390x844.
 
 ## Deployment
 
-- GitHub: `MaxFokin/cube-coach`, branch `main`, GitHub Pages "Deploy from a branch", folder
-  "/ (root)". Live URL: https://maxfokin.github.io/cube-coach/. Every push to main republishes
-  within a minute. No CI; the tests above are the gate.
+- GitHub: `MaxFokin/cube-coach`, branch `main`, pushed on 2026-11-04. The plan is GitHub Pages,
+  "Deploy from a branch", folder "/ (root)", live at https://maxfokin.github.io/cube-coach/ and
+  republished within a minute of every push to main. No CI; the tests above are the gate.
+- Pages is not enabled yet. The account is on GitHub's free plan, so Pages needs the repo public,
+  and Claude Code may not make a repo public on its own. Max runs, once:
+  `gh repo edit MaxFokin/cube-coach --visibility public --accept-visibility-change-consequences`
+  and then `gh api -X POST repos/MaxFokin/cube-coach/pages -f build_type=legacy -f 'source[branch]=main' -f 'source[path]=/'`.
+  After that, rewrite this bullet as "Pages is on". Until then the live URL returns 404.
 - The `gh` CLI on this Mac is logged in as `MaxFokin`. This clone commits as
   `Max Fokin <24751127+MaxFokin@users.noreply.github.com>` (local git config, no global identity).
 - Phones: open the URL in Safari or Chrome, Share, Add to Home Screen. The live camera needs HTTPS,
@@ -257,4 +262,5 @@ Built on 2026-10-31 in one Claude chat, in this order:
    side copied turned used to fail as ambiguous), double solver init on overlapping solving screens,
    a reload on the bottom check restarting at the top check, a leaked camera stream from a cancelled
    sheet, the live camera staying off after a busy camera, and locale-dependent builds. Added the
-   regression tests and the layout measurements above, then pushed to GitHub and enabled Pages.
+   regression tests and the layout measurements above, then pushed to GitHub. Pages waits on the
+   repo being made public (see Deployment).
