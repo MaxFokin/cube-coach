@@ -281,8 +281,9 @@ the help box open 766, everything else fits.
 - Test code repeats itself: the synthetic 3x3 side is built in both `colorread.test.js` and
   `e2e/fixtures.js`, `entryOf` exists twice, and `SOLVED2` lives in `ui.js` but is recomputed in
   `core2.test.js`. Harmless, but change both copies together.
-- The Hebrew and Polish were drafted by Claude Code on 2026-11-04 and wait for Max's review; Hebrew is
-  masculine singular throughout.
+- The Hebrew and Polish were drafted by Claude Code and shipped on 2026-11-04 after Max tried the app;
+  the reviewer's list of lines a native speaker may stop at (`docs/superpowers/reviews/`) is still open,
+  and Hebrew is masculine singular throughout.
 - `screens.py` cannot capture the short `solving` screen (the solver blocks the thread), so its two
   strings are covered by the strings test only.
 
@@ -318,4 +319,5 @@ Built on 2026-10-31 in one Claude chat, in this order:
 8. 2026-11-04, Claude Code, branch `translations`: Hebrew and Polish. All copy moved into
    `src/strings.js` with English proven unchanged by a screen snapshot, a language switch on the
    welcome screen, right-to-left Hebrew with the cube pinned left-to-right, per-language browser
-   tests and screen walks. Design and plan in `docs/superpowers/`.
+   tests and screen walks. Design, plan and the final review in `docs/superpowers/`. Merged to main
+   and live the same day.
