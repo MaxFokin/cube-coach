@@ -1,6 +1,6 @@
 // ===== Look and words =====
 const HEX = { W: '#F6F6F1', Y: '#FFD43B', R: '#D7263D', O: '#FF8A1E', B: '#1F6FEB', G: '#1FAD5C' };
-const NAME = { W: 'white', Y: 'yellow', R: 'red', O: 'orange', B: 'blue', G: 'green' };
+const colorName = (c) => t('colorName', { color: c });
 const PALETTE = ['W', 'Y', 'R', 'O', 'B', 'G'];
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -22,7 +22,8 @@ const app = {
 const is3 = () => app.cube === 3;
 const entryNow = () => (is3() ? app.entry3 : app.entry);
 const sideCount = () => (is3() ? 6 : 4);
-const faceName3 = (k) => NAME[CENTER3[STEPS3[k]]];
+const faceColor3 = (k) => CENTER3[STEPS3[k]];
+const faceName3 = (k) => colorName(faceColor3(k));
 
 // ===== Cube models for the 3D stage =====
 const POS3 = [];
@@ -380,7 +381,7 @@ const miniGrid = (colors, flagged = [], cls = 'mini') => {
 };
 const btn = (id, label, cls = '') => `<button class="btn ${cls}" id="${id}" type="button">${label}</button>`;
 const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
-const sideLabel = (k) => (is3() ? `${cap(faceName3(k))} side` : `Side ${k + 1}`);
+const sideLabel = (k) => (is3() ? t('sideLabel3', { color: faceColor3(k) }) : t('sideLabel2', { n: k + 1 }));
 
 function sideDisplay() {
   if (is3()) {
@@ -415,7 +416,7 @@ function finishSides() {
     app.analysis = r;
     if (!r.ok) { go('oops'); return; }
     app.note = r.turned.length
-      ? `You copied the ${r.turned.map(faceName3).join(' and ')} side turned around. I fixed it.` : '';
+      ? t('turnedNote', { sides: r.turned.map(faceName3).join(t('and')) }) : '';
     go('solving');
     return;
   }
@@ -445,11 +446,11 @@ function screenWelcome() {
   demoLoop();
   const ico = (n, cols) => `<span class="ico n${n}" aria-hidden="true">${cols.map((c) => `<i style="background:${HEX[c]}"></i>`).join('')}</span>`;
   panelEl.innerHTML = `
-    <h1>Let’s solve your cube</h1>
-    <p class="lead">Copy your cube’s colors and I’ll show you every turn. Which cube do you have?</p>
+    <h1>${t('welcomeTitle')}</h1>
+    <p class="lead">${t('welcomeLead')}</p>
     <div class="choose">
-      <button class="tile" id="pick2" type="button">${ico(2, ['G', 'Y', 'R', 'B'])}<strong>2×2</strong><small>Copy 4 sides</small></button>
-      <button class="tile" id="pick3" type="button">${ico(3, ['W', 'R', 'G', 'B', 'G', 'Y', 'O', 'W', 'R'])}<strong>3×3</strong><small>Copy all 6 sides</small></button>
+      <button class="tile" id="pick2" type="button">${ico(2, ['G', 'Y', 'R', 'B'])}<strong>2×2</strong><small>${t('tile2')}</small></button>
+      <button class="tile" id="pick3" type="button">${ico(3, ['W', 'R', 'G', 'B', 'G', 'Y', 'O', 'W', 'R'])}<strong>3×3</strong><small>${t('tile3')}</small></button>
     </div>`;
   on('pick2', () => { app.cube = 2; resetAll(); go('side'); });
   on('pick3', () => { app.cube = 3; resetAll(); preloadSolver().catch(() => {}); go('side'); });
@@ -471,23 +472,23 @@ function turnToSide(k, fromK, animate) {
 let lastSide = 0;
 
 function sideText(k, mode) {
-  const fixLine = ' Fix any square that’s wrong.';
+  const fix = ' ' + t('fixLine');
   if (!is3()) {
-    if (mode === 'fix') return [`Check side ${k + 1}`, 'Turn your cube until this side faces you, like the picture.' + fixLine];
+    if (mode === 'fix') return [t('side2FixTitle', { n: k + 1 }), t('side2FixLead') + fix];
     if (k === 0) {
       return mode === 'review'
-        ? ['Back to side 1', 'Turn your cube until side 1 faces you, like the picture.' + fixLine]
-        : ['Pick a side to start', 'Hold any side facing you. Keep the same side on top from now on.'];
+        ? [t('side2Review0Title'), t('side2Review0Lead') + fix]
+        : [t('side2First0Title'), t('side2First0Lead')];
     }
-    return ['Turn the cube to the left', 'Keep the same side on top. Copy the side that’s facing you now.' + (mode === 'review' ? fixLine : '')];
+    return [t('side2NextTitle'), t('side2NextLead') + (mode === 'review' ? fix : '')];
   }
-  const name = faceName3(k);
-  const extra = mode === 'review' ? fixLine : '';
-  if (mode === 'fix') return [`Check the ${name} side`, `Turn your cube so the ${name} middle faces you, like the picture.` + fixLine];
-  if (k === 0) return [mode === 'review' ? 'Back to green' : 'Green faces you', 'Hold your cube with the green middle facing you and white on top.' + extra];
-  if (k <= 3) return ['Turn it to the left', `Now the ${name} middle faces you. Keep white on top.` + extra];
-  if (k === 4) return ['Tip it toward you', 'From green, tip the top toward you. Green goes down by the green bar.' + extra];
-  return ['Flip it over', 'Flip it so yellow faces you and green is at the top, by the green bar.' + extra];
+  const color = faceColor3(k);
+  const extra = mode === 'review' ? fix : '';
+  if (mode === 'fix') return [t('side3FixTitle', { color }), t('side3FixLead', { color }) + fix];
+  if (k === 0) return [mode === 'review' ? t('side3Review0Title') : t('side3First0Title'), t('side3Lead0') + extra];
+  if (k <= 3) return [t('side3NextTitle'), t('side3NextLead', { color }) + extra];
+  if (k === 4) return [t('side3TopTitle'), t('side3TopLead') + extra];
+  return [t('side3BottomTitle'), t('side3BottomLead') + extra];
 }
 
 function screenSide(animate) {
@@ -495,29 +496,29 @@ function screenSide(animate) {
   const [title, lead] = sideText(k, mode);
   const last = k === total - 1;
   const actions = mode === 'fix'
-    ? btn('check', 'Check again', 'primary')
-    : (k > 0 ? btn('back', 'Back') : '') + btn('next', last ? 'Check my cube' : 'Next side', 'primary' + (k > 0 ? ' wide' : ''));
+    ? btn('check', t('checkAgain'), 'primary')
+    : (k > 0 ? btn('back', t('back')) : '') + btn('next', last ? t('checkMyCube') : t('nextSide'), 'primary' + (k > 0 ? ' wide' : ''));
   const cells = n3 ? 9 : 4;
   const strip = n3 && k === 4 ? ' strip-bottom' : n3 && k === 5 ? ' strip-top' : '';
   panelEl.innerHTML = `
-    ${progress(total, k, n3 ? `Side ${k + 1} of 6` : `Side ${k + 1} of 4`)}
+    ${progress(total, k, t('sideOf', { n: k + 1, total }))}
     <h1>${title}</h1>
     <p class="lead">${lead}</p>
     <div class="preview"><div class="grid-row">
       <div class="face-grid${n3 ? ' n3' : ''}${strip}" role="group" aria-label="${sideLabel(k)}">
         ${Array.from({ length: cells }, (_, c) => (n3 && c === 4
-          ? `<span class="cell center" style="--c:${HEX[CENTER3[STEPS3[k]]]}" aria-label="Middle square: ${faceName3(k)}"></span>`
+          ? `<span class="cell center" style="--c:${HEX[CENTER3[STEPS3[k]]]}" aria-label="${t('middleSquare', { color: faceColor3(k) })}"></span>`
           : `<button class="cell" type="button" data-c="${c}"></button>`)).join('')}
       </div>
-      <button class="cam-btn" id="camera" type="button" aria-label="Copy this side from a photo">${CAM_ICON}<span>Photo</span></button>
+      <button class="cam-btn" id="camera" type="button" aria-label="${t('photoAria')}">${CAM_ICON}<span>${t('photo')}</span></button>
     </div></div>
-    <p class="unsure-note" id="unsure-note" hidden>I wasn’t sure about the dotted squares. Check them on your cube.</p>
-    <div class="palette" role="group" aria-label="Colors">
-      ${PALETTE.map((col) => `<button class="sw" type="button" data-col="${col}" aria-pressed="false"><span class="dot" style="--c:${HEX[col]}"></span>${cap(NAME[col])}</button>`).join('')}
+    <p class="unsure-note" id="unsure-note" hidden>${t('unsureNote')}</p>
+    <div class="palette" role="group" aria-label="${t('colors')}">
+      ${PALETTE.map((col) => `<button class="sw" type="button" data-col="${col}" aria-pressed="false"><span class="dot" style="--c:${HEX[col]}"></span>${cap(colorName(col))}</button>`).join('')}
     </div>
     <p class="warn" id="warn" hidden></p>
     <div class="actions">${actions}</div>
-    ${k > 0 && mode !== 'fix' ? '<button class="textlink" id="replay" type="button">Show the turn again</button>' : ''}`;
+    ${k > 0 && mode !== 'fix' ? `<button class="textlink" id="replay" type="button">${t('replay')}</button>` : ''}`;
 
   panelEl.querySelectorAll('button.cell').forEach((cell) => cell.addEventListener('click', () => {
     const c = Number(cell.dataset.c);
@@ -547,13 +548,13 @@ function screenSide(animate) {
 function refreshSide(popped) {
   const k = app.side, row = entryNow()[k], limit = is3() ? 9 : 4;
   const names = is3()
-    ? ['Top left', 'Top middle', 'Top right', 'Middle left', 'Middle', 'Middle right', 'Bottom left', 'Bottom middle', 'Bottom right']
-    : ['Top left', 'Top right', 'Bottom left', 'Bottom right'];
+    ? ['sqTopLeft', 'sqTopMiddle', 'sqTopRight', 'sqMiddleLeft', 'sqMiddle', 'sqMiddleRight', 'sqBottomLeft', 'sqBottomMiddle', 'sqBottomRight']
+    : ['sqTopLeft', 'sqTopRight', 'sqBottomLeft', 'sqBottomRight'];
   panelEl.querySelectorAll('button.cell').forEach((cell) => {
     const c = Number(cell.dataset.c), col = row[c];
     if (col) cell.style.setProperty('--c', HEX[col]); else cell.style.removeProperty('--c');
     cell.textContent = col ? '' : '?';
-    cell.setAttribute('aria-label', `${names[c]} square: ${col ? NAME[col] : 'not set'}`);
+    cell.setAttribute('aria-label', t('squareLabel', { square: t(names[c]), state: col ? colorName(col) : t('notSet') }));
     cell.classList.toggle('flag', app.flags.some((f) => f.k === k && f.c === c));
     cell.classList.toggle('unsure', !!col && app.unsure.some((f) => f.k === k && f.c === c));
     if (c === popped) { cell.classList.remove('pop'); void cell.offsetWidth; cell.classList.add('pop'); }
@@ -574,7 +575,7 @@ function refreshSide(popped) {
   const warn = document.getElementById('warn');
   if (warn) {
     warn.hidden = !over;
-    if (over) warn.innerHTML = `A cube has only ${limit} ${NAME[over[0]]} squares, and you have <b>${over[1]}</b>. Look closely at red and orange too.`;
+    if (over) warn.innerHTML = t('tooMany', { n: limit, have: over[1], color: over[0] });
   }
   const note = document.getElementById('unsure-note');
   if (note) note.hidden = !app.unsure.some((f) => f.k === k);
@@ -594,15 +595,15 @@ function screenCheck(which, animate) {
   } else {
     setOrient(view('bottom'), animate);
   }
-  const tag = `<span class="edge-tag ${isTop ? 'below' : 'above'}">Side 1 is on this edge</span>`;
+  const tag = `<span class="edge-tag ${isTop ? 'below' : 'above'}">${t('edgeTag')}</span>`;
   const turnedRight = isTop && app.analysis.order === 'right'
-    ? '<p class="note">You turned your cube to the right. That works too, I sorted it out.</p>' : '';
+    ? `<p class="note">${t('turnedRightNote')}</p>` : '';
   panelEl.innerHTML = `
-    <h1>${isTop ? 'Is this your top?' : 'And is this your bottom?'}</h1>
+    <h1>${isTop ? t('checkTopTitle') : t('checkBottomTitle')}</h1>
     ${turnedRight}
-    <p class="lead">${isTop ? 'Turn back to side 1. Then look down at the top of your cube.' : 'Tip the top away from you, so the bottom faces you.'}</p>
+    <p class="lead">${isTop ? t('checkTopLead') : t('checkBottomLead')}</p>
     <div class="preview">${isTop ? '' : tag}${miniGrid(cells, [], 'check')}${isTop ? tag : ''}</div>
-    <div class="actions">${btn('no', 'No')}${btn('yes', 'Yes', 'primary')}</div>`;
+    <div class="actions">${btn('no', t('no'))}${btn('yes', t('yes'), 'primary')}</div>`;
   on('no', () => go('mismatch'));
   on('yes', () => go(isTop ? 'checkBottom' : 'hold'));
 }
@@ -614,9 +615,9 @@ function screenMismatch(animate) {
   paint(app.analysis && app.analysis.ok ? app.analysis.state : sideDisplay());
   setOrient(view('input', 0), animate);
   panelEl.innerHTML = `
-    <h1>Then a side got mixed up</h1>
-    <p class="lead">Let’s go through the sides again. Keep the same top as you turn, and look closely at red and orange.</p>
-    <div class="actions">${btn('review', 'Check the sides', 'primary')}</div>`;
+    <h1>${t('mismatchTitle')}</h1>
+    <p class="lead">${t('mismatchLead')}</p>
+    <div class="actions">${btn('review', t('checkSides'), 'primary')}</div>`;
   on('review', () => reviewSides([]));
 }
 
@@ -632,29 +633,29 @@ function screenOops(animate) {
     const colors = [...new Set(r.fixes.map((f) => f.to))];
     const to = colors.length === 1 ? colors[0] : null;
     turnToSide(sq.k, -1, animate);
-    const where = is3() ? `On the ${faceName3(sq.k)} side` : `On side ${sq.k + 1}`;
+    const lead = is3() ? t('oopsOneLead3', { color: faceColor3(sq.k) }) : t('oopsOneLead2', { n: sq.k + 1 });
     panelEl.innerHTML = `
-      <h1>Check this square</h1>
-      <p class="lead">${where}, this square doesn’t fit with the others.${to ? ` I think it’s ${NAME[to]}.` : ''}</p>
+      <h1>${t('oopsOneTitle')}</h1>
+      <p class="lead">${lead}${to ? ' ' + t('iThink', { color: to }) : ''}</p>
       <div class="minis">${figure(sq.k, [sq.c])}</div>
-      <div class="actions">${to ? btn('look', 'Let me look') + btn('fix', `Make it ${NAME[to]}`, 'primary') : btn('look', is3() ? `Check the ${faceName3(sq.k)} side` : `Check side ${sq.k + 1}`, 'primary')}</div>`;
+      <div class="actions">${to ? btn('look', t('letMeLook')) + btn('fix', t('makeIt', { color: to }), 'primary') : btn('look', is3() ? t('checkSide3', { color: faceColor3(sq.k) }) : t('checkSide2', { n: sq.k + 1 }), 'primary')}</div>`;
     on('fix', () => { entry[sq.k][sq.c] = to; save(); finishSides(); });
     on('look', () => fixSide(sq.k, [sq]));
   } else if (squares.length >= 2 && squares.length <= 4) {
     const sides = [...new Set(squares.map((s) => s.k))].sort((a, b) => a - b);
     turnToSide(sides[0], -1, animate);
     panelEl.innerHTML = `
-      <h1>One of these is wrong</h1>
-      <p class="lead">One of the marked squares doesn’t match your cube. Let’s go through the sides and look closely at them.</p>
+      <h1>${t('oopsSomeTitle')}</h1>
+      <p class="lead">${t('oopsSomeLead')}</p>
       <div class="minis">${sides.map((k) => figure(k, squares.filter((s) => s.k === k).map((s) => s.c))).join('')}</div>
-      <div class="actions">${btn('review', 'Check the marked squares', 'primary')}</div>`;
+      <div class="actions">${btn('review', t('checkMarked'), 'primary')}</div>`;
     on('review', () => reviewSides(squares));
   } else {
     turnToSide(0, -1, animate);
     panelEl.innerHTML = `
-      <h1>Some colors got mixed up</h1>
-      <p class="lead">Let’s go through the sides again. ${is3() ? 'Check that each middle color faces you as shown' : 'Keep the same top as you turn'}, and look closely at red and orange.</p>
-      <div class="actions">${btn('review', 'Check the sides', 'primary')}</div>`;
+      <h1>${t('oopsManyTitle')}</h1>
+      <p class="lead">${is3() ? t('oopsManyLead3') : t('mismatchLead')}</p>
+      <div class="actions">${btn('review', t('checkSides'), 'primary')}</div>`;
     on('review', () => reviewSides(r.error && r.error.where ? r.error.where : []));
   }
 }
@@ -666,8 +667,8 @@ function screenSolving(animate) {
   setOrient(view('solve'), animate);
   panelEl.innerHTML = `
     <div class="thinking" aria-hidden="true"><i style="background:${HEX.G}"></i><i style="background:${HEX.Y}"></i><i style="background:${HEX.R}"></i><i style="background:${HEX.B}"></i></div>
-    <h1>Working out the moves</h1>
-    <p class="lead">This takes a few seconds the first time.</p>`;
+    <h1>${t('solvingTitle')}</h1>
+    <p class="lead">${t('solvingLead')}</p>`;
   const run = ++solveRun;
   setTimeout(async () => {
     try {
@@ -691,9 +692,9 @@ function screenSolverError(animate) {
   paint(app.analysis.state);
   setOrient(view('solve'), animate);
   panelEl.innerHTML = `
-    <h1>The 3×3 helper didn’t load</h1>
-    <p class="lead">It needs the internet the first time. Check the connection, then try again.</p>
-    <div class="actions">${btn('retry', 'Try again', 'primary')}</div>`;
+    <h1>${t('solverErrorTitle')}</h1>
+    <p class="lead">${t('solverErrorLead')}</p>
+    <div class="actions">${btn('retry', t('tryAgain'), 'primary')}</div>`;
   on('retry', () => go('solving'));
 }
 
@@ -703,19 +704,17 @@ function screenHold(animate) {
   const note = app.note ? `<p class="note">${app.note}</p>` : '';
   if (!app.solution.length) {
     panelEl.innerHTML = `
-      <h1>It’s already solved!</h1>
-      <p class="lead">Mix it up, then copy it again to practice.</p>
-      <div class="actions">${btn('again', 'Copy my cube again', 'primary')}</div>`;
+      <h1>${t('alreadySolvedTitle')}</h1>
+      <p class="lead">${t('alreadySolvedLead')}</p>
+      <div class="actions">${btn('again', t('copyAgain'), 'primary')}</div>`;
     on('again', () => { resetAll(); go('side'); });
     return;
   }
   panelEl.innerHTML = `
-    <h1>Hold your cube like this</h1>
+    <h1>${t('holdTitle')}</h1>
     ${note}
-    <p class="lead">${is3()
-      ? 'Green faces you and white is on top. Keep holding it this way and only turn the part I show you.'
-      : 'Side 1 faces you, with the same top as before. Keep holding it this way and only turn the part I show you.'}</p>
-    <div class="actions">${btn('ready', 'I’m ready', 'primary')}</div>`;
+    <p class="lead">${is3() ? t('holdLead3') : t('holdLead2')}</p>
+    <div class="actions">${btn('ready', t('ready'), 'primary')}</div>`;
   on('ready', () => { app.move = 0; go('move'); });
 }
 
@@ -725,15 +724,15 @@ function screenMove(animate) {
   setOrient(view('solve'), animate);
   moveLoop(stateAt(i), m);
   panelEl.innerHTML = `
-    ${progress(sol.length, i, `Move ${i + 1} of ${sol.length}`, `<span class="key" aria-label="Cube code ${m}">${m.replace("'", '′')}</span>`)}
+    ${progress(sol.length, i, t('moveOf', { n: i + 1, total: sol.length }), `<span class="key" aria-label="${t('cubeCode', { m })}">${m.replace("'", '′')}</span>`)}
     <div class="move-head"><span class="move-icon">${arrowSVG(m, model.N, true)}</span><h1>${title}</h1></div>
     <p class="lead">${sub}</p>
-    <div class="actions">${btn('back', 'Previous')}${btn('did', 'I did it', 'primary wide')}</div>
-    <button class="textlink" id="lost" type="button" aria-expanded="${app.helpOpen}">My cube looks different</button>
+    <div class="actions">${btn('back', t('previous'))}${btn('did', t('didIt'), 'primary wide')}</div>
+    <button class="textlink" id="lost" type="button" aria-expanded="${app.helpOpen}">${t('lost')}</button>
     ${app.helpOpen ? `<div class="help">
-      <p>${is3() ? 'Keep green facing you and white on top, so your cube matches the picture.' : 'If you turned the whole cube, turn it back so it matches the picture.'}</p>
-      <p>If a turn went wrong, copy your cube again and I’ll find new moves.</p>
-      ${btn('recopy', 'Copy my cube again')}</div>` : ''}`;
+      <p>${is3() ? t('helpMatch3') : t('helpMatch2')}</p>
+      <p>${t('helpRecopy')}</p>
+      ${btn('recopy', t('copyAgain'))}</div>` : ''}`;
   on('back', () => { if (i === 0) go('hold'); else { app.move--; go('move'); } });
   on('did', () => { if (i + 1 >= sol.length) go('done'); else { app.move++; go('move'); } });
   on('lost', () => { app.helpOpen = !app.helpOpen; render(false); });
@@ -747,9 +746,9 @@ function screenDone(animate) {
   if (animate) confetti();
   const n = app.solution.length;
   panelEl.innerHTML = `
-    <h1>Solved!</h1>
-    <p class="lead">That took ${n} turn${n === 1 ? '' : 's'}. Mix it up and copy it again to go another round.</p>
-    <div class="actions">${btn('another', 'Solve another', 'primary')}</div>`;
+    <h1>${t('doneTitle')}</h1>
+    <p class="lead">${t('doneLead', { n })}</p>
+    <div class="actions">${btn('another', t('solveAnother'), 'primary')}</div>`;
   on('another', () => { resetAll(); go('side'); });
 }
 

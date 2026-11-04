@@ -9,13 +9,11 @@ const work = document.createElement('canvas');
 const workCtx = work.getContext('2d', { willReadFrequently: true });
 
 function camText(k) {
-  if (!is3()) {
-    return [`Photo of side ${k + 1}`, k === 0 ? 'Fit the side inside the square, with the top you picked at the top.' : 'Same top as before. Fit the side inside the square.'];
-  }
-  const name = faceName3(k);
-  if (k <= 3) return [`Photo of the ${name} side`, `${cap(name)} in the middle square, white at the top.`];
-  if (k === 4) return ['Photo of the white side', 'White in the middle square, green at the bottom.'];
-  return ['Photo of the yellow side', 'Yellow in the middle square, green at the top.'];
+  if (!is3()) return [t('camTitle2', { n: k + 1 }), k === 0 ? t('camHint2First') : t('camHint2Next')];
+  const color = faceColor3(k);
+  if (k <= 3) return [t('camTitle3', { color }), t('camHint3Side', { color })];
+  if (k === 4) return [t('camTitle3', { color }), t('camHint3Top')];
+  return [t('camTitle3', { color }), t('camHint3Bottom')];
 }
 
 function openCamera() {
@@ -36,12 +34,12 @@ function openCamera() {
       <canvas id="cam-canvas" hidden></canvas>
       <div class="cam-guide n${N}${strip}" id="cam-guide" aria-hidden="true">${Array.from({ length: N * N }, (_, c) =>
         `<span class="g-cell${is3() && c === 4 ? ' g-center' : ''}" ${is3() && c === 4 ? `style="--expect:${center}"` : ''}><i></i></span>`).join('')}</div>
-      <div class="cam-msg" id="cam-msg"><p>Starting the camera…</p></div>
+      <div class="cam-msg" id="cam-msg"><p>${t('camStarting')}</p></div>
     </div>
-    <p class="cam-tip" id="cam-tip" aria-live="polite">Bright room, no flash. Hold the phone a hand away.</p>
+    <p class="cam-tip" id="cam-tip" aria-live="polite">${t('camTipDefault')}</p>
     <div class="cam-actions">
-      <button class="btn" id="cam-cancel" type="button">Cancel</button>
-      <button class="btn primary wide" id="cam-use" type="button" disabled>Use these colors</button>
+      <button class="btn" id="cam-cancel" type="button">${t('cancel')}</button>
+      <button class="btn primary wide" id="cam-use" type="button" disabled>${t('useColors')}</button>
     </div>`;
   document.body.appendChild(el);
   document.body.classList.add('cam-open');
@@ -74,7 +72,7 @@ function openCamera() {
       window.removeEventListener('blur', away);
       document.removeEventListener('visibilitychange', away);
       if (!left && cam.el && cam.mode !== 'photo') {
-        setTip('Nothing opened? This app may block photos here. Open the page in your phone’s browser, or tap Cancel and tap the colors in.');
+        setTip(t('camNothingOpened'));
       }
     }, 2500);
   });
@@ -86,7 +84,7 @@ function openCamera() {
   layoutCam();
   el.querySelector('#cam-cancel').focus();
   if (!liveBlocked && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) startLive();
-  else askForPhoto('This page can’t use the live camera here, so take a photo instead.');
+  else askForPhoto(t('camBlocked'));
 }
 
 function closeCamera() {
@@ -144,7 +142,7 @@ async function startLive() {
     const denied = e && e.name === 'NotAllowedError';
     liveBlocked = denied; // a busy or missing camera is worth another try on the next side
     cam.video.hidden = true;
-    askForPhoto(denied ? 'The live camera isn’t allowed here, so take a photo instead.' : 'The live camera didn’t start, so take a photo instead.');
+    askForPhoto(denied ? t('camNotAllowed') : t('camFailed'));
   }
 }
 
@@ -155,9 +153,9 @@ function pickHTML(label, cls, capture) {
 
 function askForPhoto(why) {
   cam.mode = 'ask';
-  setMsg(`<p>${why}</p><p class="cam-small">Get close, so the side fills most of the photo.</p>` +
-    `<div class="picks">${pickHTML(CAM_ICON + 'Take a photo', 'btn primary', true)}${pickHTML('Choose a photo', 'btn', false)}</div>`);
-  setTip('Bright room, no flash. Hold the phone straight at the side.');
+  setMsg(`<p>${why}</p><p class="cam-small">${t('camGetClose')}</p>` +
+    `<div class="picks">${pickHTML(CAM_ICON + t('takePhoto'), 'btn primary', true)}${pickHTML(t('choosePhoto'), 'btn', false)}</div>`);
+  setTip(t('camTipPhoto'));
 }
 
 async function decodePhoto(file) {
@@ -176,9 +174,9 @@ async function decodePhoto(file) {
 }
 
 async function loadPhoto(file) {
-  setMsg('<p>Reading the photo…</p>');
+  setMsg(`<p>${t('camReading')}</p>`);
   let src;
-  try { src = await decodePhoto(file); } catch (e) { askForPhoto('That photo didn’t open. Try taking it again.'); return; }
+  try { src = await decodePhoto(file); } catch (e) { askForPhoto(t('camBadPhoto')); return; }
   if (!cam.el) return;
   const iw = src.width || src.naturalWidth, ih = src.height || src.naturalHeight;
   const k = Math.min(1, 1600 / Math.max(iw, ih));
@@ -201,7 +199,7 @@ async function loadPhoto(file) {
   sctx.drawImage(c, 0, 0, small.width, small.height);
   const box = findFace(sctx.getImageData(0, 0, small.width, small.height).data, small.width, small.height);
   fitBox({ x: box.x / sk, y: box.y / sk, size: box.size / sk });
-  setTip('Drag and pinch the photo so the side fits the square.');
+  setTip(t('camTipFit'));
   addRetake();
   drawPhoto();
   readNow();
@@ -211,7 +209,7 @@ function addRetake() {
   if (cam.el.querySelector('.cam-retake')) return;
   const b = document.createElement('label');
   b.className = 'cam-retake pick';
-  b.innerHTML = `${CAM_ICON}<span>Retake</span><input class="pick-input" type="file" accept="image/*" capture="environment" aria-label="Retake the photo">`;
+  b.innerHTML = `${CAM_ICON}<span>${t('retake')}</span><input class="pick-input" type="file" accept="image/*" capture="environment" aria-label="${t('retakeAria')}">`;
   cam.el.querySelector('#cam-view').appendChild(b);
 }
 
@@ -328,11 +326,11 @@ function showReads() {
   const shiny = reads.some((r) => r.why === 'shiny');
   const unsure = reads.some((r, c) => !r.sure && !(is3() && c === 4));
   cam.el.querySelector('#cam-use').disabled = missing;
-  if (missing) setTip(cam.mode === 'photo' ? 'Drag and pinch the photo so the side fills the square.' : 'Move closer so the side fills the square.');
-  else if (offCenter) setTip(`Put the ${faceName3(k)} middle in the middle square.`);
-  else if (shiny) setTip('A square looks shiny. Tilt the cube a little, away from the light.');
-  else if (unsure) setTip(cam.mode === 'live' ? 'Hold still for a moment.' : 'I’m not sure about the dotted squares. You can fix them after.');
-  else setTip('Looks good! Tap “Use these colors”.');
+  if (missing) setTip(cam.mode === 'photo' ? t('camTipFillPhoto') : t('camTipCloser'));
+  else if (offCenter) setTip(t('camTipCenter', { color: faceColor3(k) }));
+  else if (shiny) setTip(t('camTipShiny'));
+  else if (unsure) setTip(cam.mode === 'live' ? t('camTipStill') : t('camTipUnsure'));
+  else setTip(t('camTipGood'));
 }
 
 function useReadings() {

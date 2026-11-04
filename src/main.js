@@ -1,10 +1,10 @@
 // ===== Start =====
 let restartArmed = false, restartTimer = null;
-function disarm() { restartArmed = false; clearTimeout(restartTimer); restartBtn.textContent = 'Start over'; restartBtn.classList.remove('armed'); }
+function disarm() { restartArmed = false; clearTimeout(restartTimer); restartBtn.textContent = t('startOver'); restartBtn.classList.remove('armed'); }
 restartBtn.addEventListener('click', () => {
   if (!restartArmed) {
     restartArmed = true;
-    restartBtn.textContent = 'Tap again to start over';
+    restartBtn.textContent = t('startOverArmed');
     restartBtn.classList.add('armed');
     restartTimer = setTimeout(disarm, 2600);
     return;
@@ -24,6 +24,7 @@ window.addEventListener('resize', () => {
   }, 200);
 });
 
+disarm();
 restore();
 useModel(app.cube);
 if (app.cube === 3 && app.screen !== 'welcome') preloadSolver().catch(() => {});
