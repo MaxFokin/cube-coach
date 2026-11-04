@@ -418,11 +418,11 @@ function paintTheme() {
   themeBtn.setAttribute('aria-label', t(isDark() ? 'lightMode' : 'darkMode'));
 }
 
-// Everything outside the panel that has words: the switch, the theme toggle, the credits line.
+// Everything outside the panel that has words in the current language: the switch and the theme
+// toggle. The credits line stays English.
 function refreshChrome() {
   refreshLangs();
   paintTheme();
-  $('#source-word').textContent = t('source');
 }
 
 // ===== Screens =====

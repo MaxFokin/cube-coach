@@ -14,7 +14,7 @@
         {
           "ref": "src/ui.js",
           "change": "changed",
-          "note": "Switches and saves the theme, paints the moon or sun, and refreshes the toggle label and the credits word with the language on every screen change."
+          "note": "Switches and saves the theme, paints the moon or sun, and refreshes the toggle label with the language on every screen change."
         },
         {
           "ref": "src/extra.css",
@@ -29,7 +29,7 @@
         {
           "ref": "src/strings.js",
           "change": "changed",
-          "note": "Three new words in every language: Source, Dark mode, Light mode."
+          "note": "Two new words in every language: Dark mode, Light mode. The credits line is not translated."
         },
         {
           "ref": "src/main.js",

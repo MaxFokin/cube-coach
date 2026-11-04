@@ -266,12 +266,6 @@ const STRINGS = {
     he: 'מצב בהיר',
     pl: 'Tryb jasny',
   },
-  // The credits line at the bottom of every screen (the handles are not words)
-  source: {
-    en: 'Source',
-    he: 'קוד המקור',
-    pl: 'Kod źródłowy',
-  },
   // Copying a side
   sideOf: {
     en: 'Side {n} of {total}',

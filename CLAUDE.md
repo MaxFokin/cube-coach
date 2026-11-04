@@ -89,7 +89,7 @@ Screens: `welcome` -> `side` (x4 or x6) -> 2x2: `checkTop` -> `checkBottom` -> `
 (2x2 top or bottom didn't match), `solverError` (3x3 solver failed). `go(screen)` saves and renders.
 `render()` always stops loops, closes the camera, picks the right 3D model, sets `data-screen`
 and `data-big` (bigger stage) on `#app`, and refreshes the chrome outside the panel (`refreshChrome`:
-the language switch, the theme toggle's label, the credits word).
+the language switch and the theme toggle's label).
 
 Progress is saved in `localStorage` under `cube-coach-v2`, including the solution, so a reload lands
 on the same move. `restore()` validates everything it reads back and keeps `checkBottom` as well as
@@ -110,7 +110,8 @@ color names may be joined with the language's `and` using the `sideListName` for
 note, which also has a singular and a plural sentence); words are never glued otherwise. Any
 sentence whose color word inflects is written per color (Polish cases, Hebrew gender). Hebrew
 addresses the child in masculine singular; Polish uses imperatives and impersonal phrasing, never a
-gendered past tense. Cube notation (R, U′, F2), "Cube Coach" and the page title are not translated.
+gendered past tense. Cube notation (R, U′, F2), "Cube Coach", the page title and the credits line
+("Source" and the handles) are not translated.
 Adding a language means adding it to `LANGS` and to every entry; `tests/strings.test.js` fails on any
 gap, mismatched placeholder, or malformed set.
 
@@ -150,7 +151,7 @@ label (`darkMode` / `lightMode`); it runs on every render and when the phone's s
 Nothing is saved until the first tap, so until then the app follows the phone.
 
 The credits line (`<footer class="credits">` in the template) links GitHub and LinkedIn (@maxfokin)
-and the repo (the `source` string, the only translated word in it). It sits under every screen, at
+and the repo ("Source"); it is English in every language, Max's call on 2026-11-04. It sits under every screen, at
 the bottom of the phone when the content is shorter: `.app` is a flex column with
 `min-height: 100dvh` minus the safe areas, and `.credits` has `margin-top: auto`. It is pinned
 `direction: ltr` and to Andika (with Assistant for Hebrew glyphs) so it looks the same in every
@@ -278,8 +279,8 @@ localStorage throws; a phone set to Hebrew or Polish opens in that language and 
 English, nothing is saved until a tap, and a tapped choice beats the phone; the switch and the
 toggle share the header's right group and Start over is gone from the welcome header; the toggle
 flips `data-theme`, survives a reload and Start over, and follows the phone until tapped; the
-credits line is on every screen with the same three links, order, font and direction in every
-language.
+credits line is on every screen with the same three links, words, order, font and direction in
+every language.
 
 Layout, measured in headless Chromium with realistic entries (page height / viewport height). The
 credits line adds 52 px below every screen (a 24 px gap and the line; 57 px with the web font),

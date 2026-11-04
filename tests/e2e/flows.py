@@ -44,8 +44,7 @@ async def direction(page, sel):
 async def check_credits(page, code):
     assert await page.eval_on_selector_all('.credits a', 'els => els.map((a) => a.href)') == LINKS, 'the credits line links GitHub, LinkedIn and the repo, in that order'
     texts = await page.eval_on_selector_all('.credits a', 'els => els.map((a) => a.textContent.trim())')
-    assert texts[:2] == ['@maxfokin', '@maxfokin'], texts
-    if code == 'he': assert not re.search(r'[A-Za-z]', texts[2]), 'the source link is translated'
+    assert texts == ['@maxfokin', '@maxfokin', 'Source'], f'the credits line reads the same in every language: {texts}'
     assert await direction(page, '.credits') == 'ltr', 'the credits line never mirrors'
     font = await page.evaluate("getComputedStyle(document.querySelector('.credits')).fontFamily")
     assert font.startswith('Andika'), f'the credits line keeps its font in every language: {font}'
