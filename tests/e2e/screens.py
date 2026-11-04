@@ -15,10 +15,11 @@ SNAP = ROOT / 'tests' / 'fixtures' / 'en-screens.json'
 MAX = [['W','G','Y','O'],['W','B','Y','G'],['W','B','R','B'],['O','R','Y','G']]
 # The solved 3x3 after R U2 F' L D B2 R' U F D2, as the six copied sides F R B L U D.
 SCR3 = ["GGWWGOBGG","RRYYRGOBY","GOROBWRWO","GYWROBYYO","YBORWBRRB","WWWGYYBOB"]
-ALLOWED = ('Cube Coach', 'English', 'Polski')
+ALLOWED = ('Cube Coach', 'English', 'Polski', 'Cube', 'Coach')
+VW = 375
 
 async def new_page(browser, lang, solver=True):
-    ctx = await browser.new_context(viewport={'width': 375, 'height': 667}, is_mobile=True, has_touch=True)
+    ctx = await browser.new_context(viewport={'width': VW, 'height': 667}, is_mobile=True, has_touch=True)
     page = await ctx.new_page(); errors = []
     page.on('pageerror', lambda e: errors.append(str(e)))
     await page.route('**/fonts.g*/**', lambda r: r.abort())
@@ -46,7 +47,7 @@ async def walk(browser, lang):
         text = await page.evaluate("sel => { const el = document.querySelector(sel), l = el.querySelector('.langs'); return l ? el.innerText.replace('\\n' + l.innerText, '').replace(l.innerText, '') : el.innerText; }", '.cam' if cam else '#panel')
         if not cam: text += '\n' + (await page.text_content('#restart'))
         h = await page.evaluate('[document.documentElement.scrollHeight, document.documentElement.scrollWidth, window.innerWidth]')
-        shots.append((label, text, h[0], h[1] <= h[2]))
+        shots.append((label, text, h[0], h[1] <= VW and h[2] == VW))  # content wider than the phone makes mobile Chromium zoom out
     page, errors = await new_page(browser, lang)
     await shot(page, 'welcome')
     await page.tap('#pick2'); await page.wait_for_timeout(300); await shot(page, 'side 1 empty')
@@ -89,6 +90,10 @@ async def walk(browser, lang):
     await page2.context.close()
     return shots, errors + errors2
 
+def english_left(text, snap):
+    words = set(re.findall(r'[A-Za-z]{4,}', ' '.join(v['text'] for v in snap.values())))
+    return [w for w in re.findall(r'[A-Za-z]{4,}', text) if w in words and w not in ALLOWED]
+
 def latin_left(text):
     for tok in ALLOWED: text = text.replace(tok, '')
     return re.findall(r'[A-Za-z]{2,}', text)
@@ -107,6 +112,7 @@ async def main(lang, write):
         if not fits_wide: problems.append('wider than the screen')
         if lang == 'en' and not write and snap.get(label, {}).get('text') != text: problems.append('text differs from the snapshot')
         if lang == 'he' and latin_left(text): problems.append('Latin left: ' + ' '.join(latin_left(text)[:6]))
+        if lang == 'pl' and english_left(text, snap): problems.append('English left: ' + ' '.join(english_left(text, snap)[:6]))
         print(('   ok   ' if not problems else '   FAIL ') + f'{label:22s} {height:4d}  ' + '; '.join(problems))
         bad += bool(problems)
     if lang == 'en' and not write and set(snap) != {s[0] for s in shots}:

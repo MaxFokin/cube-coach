@@ -45,4 +45,7 @@ delete STRINGS._probe; delete STRINGS._probeColor; delete STRINGS._probeNest;
 useLang('he');
 assert(t('doneLead', { n: 1 }) !== t('doneLead', { n: 2 }), 'Hebrew one and other differ');
 useLang('en');
+useLang('pl');
+assert(new Set([1, 3, 5].map((n) => t('doneLead', { n }))).size === 3, 'Polish one, few, many differ');
+useLang('en');
 console.log('strings: ok (' + Object.keys(STRINGS).length + ' keys, ' + Object.keys(LANGS).join(' ') + ')');
