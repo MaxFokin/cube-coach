@@ -49,3 +49,14 @@ useLang('pl');
 assert(new Set([1, 3, 5].map((n) => t('doneLead', { n }))).size === 3, 'Polish one, few, many differ');
 useLang('en');
 console.log('strings: ok (' + Object.keys(STRINGS).length + ' keys, ' + Object.keys(LANGS).join(' ') + ')');
+
+// Grammar that word-joining cannot produce: "in the side" is בצד in Hebrew, and the turned-side
+// note has a singular and a plural form in Hebrew and Polish.
+useLang('he');
+assert(t('oopsOneLead3', { color: 'G' }).startsWith('בצד '), 'Hebrew: בצד, not בהצד');
+assert(t('turnedNote', { n: 1, sides: 'x' }) !== t('turnedNote', { n: 2, sides: 'x' }), 'Hebrew turned note: one and other differ');
+useLang('pl');
+assert(t('turnedNote', { n: 1, sides: 'x' }) !== t('turnedNote', { n: 2, sides: 'x' }), 'Polish turned note: one and other differ');
+useLang('en');
+assert(STRINGS.sideListName, 'color names have a list form for the turned-side note');
+console.log('strings: ok (turned-side note and Hebrew בצד)');

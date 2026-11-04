@@ -71,6 +71,18 @@
   "text": "Move 1 of 17\nD2\n2×\nBottom, two turns\n\nTurn the bottom layer two turns. Either way works.\n\nPrevious\nI did it\nMy cube looks different\nStart over",
   "height": 667
  },
+ "hold (3x3) one side turned": {
+  "text": "Hold your cube like this\n\nYou copied the green side turned around. I fixed it.\n\nGreen faces you and white is on top. Keep holding it this way and only turn the part I show you.\n\nI’m ready\nStart over",
+  "height": 667
+ },
+ "hold (3x3) two sides turned": {
+  "text": "Hold your cube like this\n\nYou copied the green and red side turned around. I fixed it.\n\nGreen faces you and white is on top. Keep holding it this way and only turn the part I show you.\n\nI’m ready\nStart over",
+  "height": 667
+ },
+ "oops (3x3 one square)": {
+  "text": "Check this square\n\nOn the green side, this square doesn’t fit with the others. I think it’s green.\n\nGreen side\nLet me look\nMake it green\nStart over",
+  "height": 667
+ },
  "solverError": {
   "text": "The 3×3 helper didn’t load\n\nIt needs the internet the first time. Check the connection, then try again.\n\nTry again\nStart over",
   "height": 667

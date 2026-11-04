@@ -23,7 +23,6 @@ const is3 = () => app.cube === 3;
 const entryNow = () => (is3() ? app.entry3 : app.entry);
 const sideCount = () => (is3() ? 6 : 4);
 const faceColor3 = (k) => CENTER3[STEPS3[k]];
-const faceName3 = (k) => colorName(faceColor3(k));
 
 // ===== Cube models for the 3D stage =====
 const POS3 = [];
@@ -426,7 +425,7 @@ function finishSides() {
     app.analysis = r;
     if (!r.ok) { go('oops'); return; }
     app.note = r.turned.length
-      ? t('turnedNote', { sides: r.turned.map(faceName3).join(t('and')) }) : '';
+      ? t('turnedNote', { n: r.turned.length, sides: r.turned.map((k) => t('sideListName', { color: faceColor3(k) })).join(t('and')) }) : '';
     go('solving');
     return;
   }

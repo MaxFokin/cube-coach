@@ -94,8 +94,10 @@ a per-color set keyed W Y R O B G (picked with `vars.color`); sets nest either w
 `vars`. A missing language falls back to English; an unknown key returns the key. Move names are in
 `MOVE_TEXT[move] = { en: [title, instruction], he, pl }`, read with `moveText(m)`.
 
-Rules for the words: whole sentences may be joined with a space (`fixLine`, `iThink`), words never;
-any sentence whose color word inflects is written per color (Polish cases, Hebrew gender). Hebrew
+Rules for the words: whole sentences may be joined with a space (`fixLine`, `iThink`); a list of
+color names may be joined with the language's `and` using the `sideListName` forms (the turned-side
+note, which also has a singular and a plural sentence); words are never glued otherwise. Any
+sentence whose color word inflects is written per color (Polish cases, Hebrew gender). Hebrew
 addresses the child in masculine singular; Polish uses imperatives and impersonal phrasing, never a
 gendered past tense. Cube notation (R, U′, F2), "Cube Coach" and the page title are not translated.
 Adding a language means adding it to `LANGS` and to every entry; `tests/strings.test.js` fails on any
@@ -286,7 +288,6 @@ the help box open 766, everything else fits.
 
 ## Backlog ideas (not started)
 
-- Hebrew (RTL) version with a language switch.
 - A simpler beginner's method for the 3x3 (more moves, but teachable) as an option.
 - Snap a photo when the live view is steady, instead of tapping.
 - Better color calibration: ask for one photo of a solved side, or use all six 3x3 middles together.

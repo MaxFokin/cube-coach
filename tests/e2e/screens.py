@@ -82,6 +82,17 @@ async def walk(browser, lang):
     await paint(page, [list(s) for s in SCR3[1:]], n3=True)
     await page.wait_for_selector('#ready', timeout=30000); await shot(page, 'hold (3x3)')
     await page.tap('#ready'); await page.wait_for_timeout(100); await shot(page, 'move 1 (3x3)')
+    # The turned-side note (one side, then two) and the single-square oops, which the solve path never shows.
+    rot = lambda s: ''.join(s[i] for i in (6, 3, 0, 7, 4, 1, 8, 5, 2))
+    for turned, label in (((0,), 'hold (3x3) one side turned'), ((0, 1), 'hold (3x3) two sides turned')):
+        await page.tap('#restart'); await page.tap('#restart'); await page.wait_for_timeout(200)
+        await page.tap('#pick3'); await page.wait_for_timeout(300)
+        await paint(page, [list(rot(s) if k in turned else s) for k, s in enumerate(SCR3)], n3=True)
+        await page.wait_for_selector('#ready', timeout=30000); await shot(page, label)
+    await page.tap('#restart'); await page.tap('#restart'); await page.wait_for_timeout(200)
+    await page.tap('#pick3'); await page.wait_for_timeout(300)
+    wrong3 = [list(s) for s in SCR3]; wrong3[0][0] = 'W'
+    await paint(page, wrong3, n3=True); await shot(page, 'oops (3x3 one square)')
     await page.context.close()
     page2, errors2 = await new_page(browser, lang, solver=False)
     await page2.tap('#pick3'); await page2.wait_for_timeout(300)
