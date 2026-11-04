@@ -3,27 +3,6 @@ const HEX = { W: '#F6F6F1', Y: '#FFD43B', R: '#D7263D', O: '#FF8A1E', B: '#1F6FE
 const NAME = { W: 'white', Y: 'yellow', R: 'red', O: 'orange', B: 'blue', G: 'green' };
 const PALETTE = ['W', 'Y', 'R', 'O', 'B', 'G'];
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
-const either = 'Either way works.';
-const MOVE_TEXT = {
-  "R":  ['Right side up', 'Turn the right side up, away from you.'],
-  "R'": ['Right side down', 'Turn the right side down, toward you.'],
-  "R2": ['Right side, two turns', 'Turn the right side two turns. ' + either],
-  "L":  ['Left side down', 'Turn the left side down, toward you.'],
-  "L'": ['Left side up', 'Turn the left side up, away from you.'],
-  "L2": ['Left side, two turns', 'Turn the left side two turns. ' + either],
-  "U":  ['Top to the left', 'Turn the top layer to the left.'],
-  "U'": ['Top to the right', 'Turn the top layer to the right.'],
-  "U2": ['Top, two turns', 'Turn the top layer two turns. ' + either],
-  "D":  ['Bottom to the right', 'Turn the bottom layer to the right.'],
-  "D'": ['Bottom to the left', 'Turn the bottom layer to the left.'],
-  "D2": ['Bottom, two turns', 'Turn the bottom layer two turns. ' + either],
-  "F":  ['Front like a clock', 'Turn the front the way a clock’s hands go.'],
-  "F'": ['Front the other way', 'Turn the front against a clock’s hands.'],
-  "F2": ['Front, two turns', 'Turn the front two turns. ' + either],
-  "B":  ['Back layer, top goes left', 'Turn the back layer so its top row goes to the left.'],
-  "B'": ['Back layer, top goes right', 'Turn the back layer so its top row goes to the right.'],
-  "B2": ['Back layer, two turns', 'Turn the back layer two turns. ' + either],
-};
 const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const SOLVED2 = Array.from({ length: 24 }, (_, i) => refFace(i % 3, POS[Math.floor(i / 3)][i % 3])).join('');
 const SOLVER_URLS = [
@@ -742,7 +721,7 @@ function screenHold(animate) {
 
 function screenMove(animate) {
   const i = app.move, sol = app.solution, m = sol[i];
-  const [title, sub] = MOVE_TEXT[m];
+  const [title, sub] = moveText(m);
   setOrient(view('solve'), animate);
   moveLoop(stateAt(i), m);
   panelEl.innerHTML = `
