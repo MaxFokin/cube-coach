@@ -55,7 +55,11 @@ body {
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--coach); outline-offset: 3px; }
 
-.app { max-width: 520px; margin: 0 auto; padding: 8px 18px 28px; }
+.app {
+  max-width: 520px; margin: 0 auto; padding: 8px 18px 28px; display: flex; flex-direction: column;
+  min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+}
 .top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; min-height: 52px; gap: 12px; }
 .brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -0.01em; }
 .logo { width: 28px; height: 28px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #0D0E12; border-radius: 8px; }
@@ -66,7 +70,7 @@ button { font: inherit; color: inherit; }
   font: 500 15px/1 var(--display); touch-action: manipulation;
 }
 .restart.armed { color: var(--ink); border-color: var(--coach); }
-.app[data-screen="welcome"] .restart { visibility: hidden; }
+.app[data-screen="welcome"] .restart { display: none; }
 
 /* The cube stage */
 .stage { position: relative; height: clamp(180px, 27vh, 280px); margin: 0 -18px; transition: height .5s cubic-bezier(.4, 0, .2, 1); pointer-events: none; overflow-x: clip; }

@@ -10,6 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Assistant:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<script>/* The saved theme, applied before the first paint. The key is THEME_KEY in ui.js. */
+try { var m = localStorage.getItem('cube-coach-theme'); if (m === 'light' || m === 'dark') document.documentElement.dataset.theme = m; } catch (e) {}</script>
 <style>
 :root {
   --desk: #EDF0F5;
@@ -67,7 +69,11 @@ body {
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--coach); outline-offset: 3px; }
 
-.app { max-width: 520px; margin: 0 auto; padding: 8px 18px 28px; }
+.app {
+  max-width: 520px; margin: 0 auto; padding: 8px 18px 28px; display: flex; flex-direction: column;
+  min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+}
 .top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; min-height: 52px; gap: 12px; }
 .brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -0.01em; }
 .logo { width: 28px; height: 28px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #0D0E12; border-radius: 8px; }
@@ -78,7 +84,7 @@ button { font: inherit; color: inherit; }
   font: 500 15px/1 var(--display); touch-action: manipulation;
 }
 .restart.armed { color: var(--ink); border-color: var(--coach); }
-.app[data-screen="welcome"] .restart { visibility: hidden; }
+.app[data-screen="welcome"] .restart { display: none; }
 
 /* The cube stage */
 .stage { position: relative; height: clamp(180px, 27vh, 280px); margin: 0 -18px; transition: height .5s cubic-bezier(.4, 0, .2, 1); pointer-events: none; overflow-x: clip; }
@@ -281,10 +287,12 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
 .tile strong { font: 600 28px/1 var(--display); letter-spacing: -0.01em; }
 .tile small { font: 400 15px/1.2 var(--text); color: var(--ink-soft); }
 
-/* Language switch: one small segmented control under the brand, welcome screen only.
-   The header never mirrors, so the brand and the switch stay top-left in Hebrew too. */
-.top { direction: ltr; flex-wrap: wrap; row-gap: 6px; }
-.langs { display: none; flex-basis: 100%; order: 3; }
+/* Header tools, top right: the language switch (welcome screen only, where Start over is away)
+   and the light/dark toggle. The header never mirrors, so the brand stays top-left and the tools
+   top-right in Hebrew too. */
+.top { direction: ltr; }
+.tools { display: flex; align-items: center; gap: 8px; }
+.langs { display: none; }
 .app[data-screen="welcome"] .langs { display: flex; }
 .lang {
   appearance: none; cursor: pointer; display: grid; justify-items: center; gap: 1px; padding: 3px 9px 4px;
@@ -295,6 +303,24 @@ h1 { font: 600 clamp(26px, 7vw, 32px)/1.12 var(--display); margin: 0; letter-spa
 .lang:last-child { border-radius: 0 999px 999px 0; }
 .lang i { font: 400 15px/1 system-ui, sans-serif; font-style: normal; }
 .lang[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); position: relative; z-index: 1; }
+.theme {
+  appearance: none; cursor: pointer; width: 36px; height: 33px; padding: 0; display: grid; place-items: center;
+  background: transparent; color: var(--ink-soft); border: 2px solid var(--line); border-radius: 999px; touch-action: manipulation;
+}
+.theme svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.theme .sun, .theme.dark .moon { display: none; }
+.theme.dark .sun { display: block; }
+
+/* Credits: one quiet line below every screen, at the bottom of the phone when there is room.
+   Pinned left-to-right and to Andika, so it looks the same in every language. */
+.credits {
+  direction: ltr; margin-top: auto; padding-top: 24px; display: flex; justify-content: center; align-items: center;
+  flex-wrap: wrap; gap: 2px 10px; color: var(--ink-soft); font: 400 13px/1.3 'Andika', 'Assistant', 'Arial Hebrew', system-ui, sans-serif;
+}
+.credits a { display: inline-flex; align-items: center; gap: 5px; padding: 8px 2px; color: inherit; text-decoration: none; touch-action: manipulation; }
+.credits a:hover { color: var(--ink); }
+.credits svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
+.credits .dot { opacity: .45; }
 
 /* 3x3 faces */
 .face-grid.n3 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 7px; padding: 9px; }
@@ -399,7 +425,10 @@ body.cam-open { overflow: hidden; }
 <div class="app" id="app" data-screen="welcome">
   <header class="top">
     <div class="brand"><span class="logo" aria-hidden="true"><i style="background:#1FAD5C"></i><i style="background:#FFD43B"></i><i style="background:#D7263D"></i><i style="background:#1F6FEB"></i></span>Cube Coach</div>
-    <button class="restart" id="restart" type="button">Start over</button>
+    <div class="tools">
+      <button class="restart" id="restart" type="button">Start over</button>
+      <button class="theme" id="theme" type="button" aria-label="Dark mode"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
+    </div>
   </header>
   <div class="stage" id="stage" aria-hidden="true">
     <div class="floor"></div>
@@ -408,6 +437,11 @@ body.cam-open { overflow: hidden; }
     </div>
   </div>
   <main class="panel" id="panel" aria-live="polite"></main>
+  <footer class="credits">
+    <a href="https://github.com/maxfokin/" target="_blank" rel="noopener me" aria-label="GitHub: @maxfokin"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>@maxfokin</a><span class="dot" aria-hidden="true">·</span>
+    <a href="https://www.linkedin.com/in/maxfokin/" target="_blank" rel="noopener me" aria-label="LinkedIn: @maxfokin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>@maxfokin</a><span class="dot" aria-hidden="true">·</span>
+    <a href="https://github.com/MaxFokin/cube-coach" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06l-4.25-4.25z"/></svg><span id="source-word">Source</span></a>
+  </footer>
 </div>
 <script>
 (() => {
@@ -1227,6 +1261,22 @@ const STRINGS = {
     en: 'Language',
     he: 'שפה',
     pl: 'Język',
+  },
+  darkMode: {
+    en: 'Dark mode',
+    he: 'מצב כהה',
+    pl: 'Tryb ciemny',
+  },
+  lightMode: {
+    en: 'Light mode',
+    he: 'מצב בהיר',
+    pl: 'Tryb jasny',
+  },
+  // The credits line at the bottom of every screen (the handles are not words)
+  source: {
+    en: 'Source',
+    he: 'קוד המקור',
+    pl: 'Kod źródłowy',
   },
   // Copying a side
   sideOf: {
@@ -2151,14 +2201,22 @@ function restore() {
 // ===== Language =====
 // Kept under its own key, apart from the progress record, so Start over and restore() never touch it.
 const LANG_KEY = 'cube-coach-lang';
-function setLang(code) {
+// applyLang switches the words without saving, so an untouched app keeps following the phone;
+// setLang (the switch) saves the choice.
+function applyLang(code) {
   useLang(code);
-  try { localStorage.setItem(LANG_KEY, code); } catch (e) { /* storage unavailable */ }
   document.documentElement.lang = code;
   document.documentElement.dir = LANGS[code].dir;
 }
-// The switch: one segmented control under the brand, built once from LANGS. CSS shows it on the
-// welcome screen only. Each segment is the language's flag over its code; the full name is the label.
+function setLang(code) {
+  applyLang(code);
+  try { localStorage.setItem(LANG_KEY, code); } catch (e) { /* storage unavailable */ }
+}
+// The phone's language when it is one of ours, else English.
+const phoneLang = () => (navigator.languages || [navigator.language]).map((l) => String(l).slice(0, 2).toLowerCase()).find((l) => Object.keys(LANGS).includes(l)) || 'en';
+// The switch: one segmented control in the header's tools group, beside the theme toggle, built
+// once from LANGS. CSS shows it on the welcome screen only. Each segment is the language's flag
+// over its code; the full name is the label.
 let langsEl = null;
 function refreshLangs() {
   if (!langsEl) {
@@ -2167,10 +2225,36 @@ function refreshLangs() {
     langsEl.innerHTML = Object.keys(LANGS).map((code) =>
       `<button class="lang" type="button" data-lang="${code}" lang="${code}" aria-label="${LANGS[code].name}"><i>${LANGS[code].flag}</i>${LANGS[code].code}</button>`).join('');
     langsEl.querySelectorAll('.lang').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); disarm(); render(false); }));
-    $('.top').appendChild(langsEl);
+    $('.tools').insertBefore(langsEl, themeBtn);
   }
   langsEl.setAttribute('aria-label', t('language'));
   langsEl.querySelectorAll('.lang').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+}
+
+// ===== Theme =====
+// Light or dark on request; without a saved choice the app follows the phone. The same key is read
+// by a one-line script in the head, so a saved choice is applied before the first paint.
+const THEME_KEY = 'cube-coach-theme';
+const themeBtn = $('#theme');
+function isDark() {
+  const mode = document.documentElement.dataset.theme;
+  return mode === 'dark' || (mode !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+}
+function setTheme(mode) {
+  document.documentElement.dataset.theme = mode;
+  try { localStorage.setItem(THEME_KEY, mode); } catch (e) { /* storage unavailable */ }
+}
+// The icon shows the way out (a sun in the dark), the label says where it leads.
+function paintTheme() {
+  themeBtn.classList.toggle('dark', isDark());
+  themeBtn.setAttribute('aria-label', t(isDark() ? 'lightMode' : 'darkMode'));
+}
+
+// Everything outside the panel that has words: the switch, the theme toggle, the credits line.
+function refreshChrome() {
+  refreshLangs();
+  paintTheme();
+  $('#source-word').textContent = t('source');
 }
 
 // ===== Screens =====
@@ -2238,7 +2322,7 @@ function render(animate) {
   spinnerEl.classList.remove('spinning');
   useModel(app.cube);
   appEl.dataset.screen = app.screen;
-  refreshLangs();
+  refreshChrome();
   const big = ['welcome', 'checkTop', 'checkBottom', 'hold', 'move', 'done', 'solving', 'solverError'].includes(app.screen);
   if (big) appEl.dataset.big = ''; else delete appEl.dataset.big;
   ({
@@ -2956,6 +3040,9 @@ restartBtn.addEventListener('click', () => {
   go('welcome');
 });
 
+themeBtn.addEventListener('click', () => { setTheme(isDark() ? 'light' : 'dark'); paintTheme(); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintTheme);
+
 let resizeTimer = null;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
@@ -2968,7 +3055,7 @@ window.addEventListener('resize', () => {
 
 let savedLang = null;
 try { savedLang = localStorage.getItem(LANG_KEY); } catch (e) { /* storage unavailable */ }
-setLang(savedLang in LANGS ? savedLang : 'en');
+applyLang(Object.keys(LANGS).includes(savedLang) ? savedLang : phoneLang());
 disarm();
 restore();
 useModel(app.cube);

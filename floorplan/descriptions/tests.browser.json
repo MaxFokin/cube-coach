@@ -10,11 +10,15 @@
     },
     "tests/e2e/flows.py": {
       "name": "Solve flow tests",
-      "description": "Solves the known 2x2 in every language and a 3x3 in a phone-sized browser, checking the switch, reloads, Start over and blocked storage."
+      "description": "Solves the known 2x2 in every language and a 3x3 in a phone-sized browser, checking the switch, the theme toggle, the credits line, the phone's language, reloads, Start over and blocked storage."
     },
     "tests/e2e/screens.py": {
       "name": "Screen walk",
-      "description": "Walks 22 screens in one language, comparing English text with its snapshot, checking no foreign words remain, and measuring heights."
+      "description": "Walks 22 screens in one language, comparing English text with its snapshot, checking no foreign words remain and the credits line is there, and measuring heights."
+    },
+    "tests/e2e/screenshots.py": {
+      "name": "README screenshots",
+      "description": "Takes the three phone screenshots the README shows: the welcome screen, copying a 3x3 side, and a turn in dark mode."
     }
   }
 }

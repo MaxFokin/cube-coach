@@ -16,10 +16,11 @@ MAX = [['W','G','Y','O'],['W','B','Y','G'],['W','B','R','B'],['O','R','Y','G']]
 # The solved 3x3 after R U2 F' L D B2 R' U F D2, as the six copied sides F R B L U D.
 SCR3 = ["GGWWGOBGG","RRYYRGOBY","GOROBWRWO","GYWROBYYO","YBORWBRRB","WWWGYYBOB"]
 ALLOWED = ('Cube Coach', 'English', 'Polski', 'Cube', 'Coach')
-VW = 375
+VW, VH = 375, 667
+FOOTER = 57  # the credits line below every screen: a 24 px gap and a 33 px line, under the buttons
 
 async def new_page(browser, lang, solver=True):
-    ctx = await browser.new_context(viewport={'width': VW, 'height': 667}, is_mobile=True, has_touch=True)
+    ctx = await browser.new_context(viewport={'width': VW, 'height': VH}, is_mobile=True, has_touch=True)
     page = await ctx.new_page(); errors = []
     page.on('pageerror', lambda e: errors.append(str(e)))
     await page.route('**/fonts.g*/**', lambda r: r.abort())
@@ -47,7 +48,8 @@ async def walk(browser, lang):
         text = await page.evaluate("sel => { const el = document.querySelector(sel), l = el.querySelector('.langs'); return l ? el.innerText.replace('\\n' + l.innerText, '').replace(l.innerText, '') : el.innerText; }", '.cam' if cam else '#panel')
         if not cam: text += '\n' + (await page.text_content('#restart'))
         h = await page.evaluate('[document.documentElement.scrollHeight, document.documentElement.scrollWidth, window.innerWidth]')
-        shots.append((label, text, h[0], h[1] <= VW and h[2] == VW))  # content wider than the phone makes mobile Chromium zoom out
+        credits = cam or await page.evaluate("(() => { const f = document.querySelector('.credits'); return !!f && getComputedStyle(f).display !== 'none' && f.querySelectorAll('a').length === 3; })()")
+        shots.append((label, text, h[0], h[1] <= VW and h[2] == VW, credits))  # content wider than the phone makes mobile Chromium zoom out
     page, errors = await new_page(browser, lang)
     await shot(page, 'welcome')
     await page.tap('#pick2'); await page.wait_for_timeout(300); await shot(page, 'side 1 empty')
@@ -116,11 +118,12 @@ async def main(lang, write):
         await browser.close()
     snap = json.loads(SNAP.read_text(encoding='utf-8')) if SNAP.exists() else {}
     bad = 0
-    for label, text, height, fits_wide in shots:
-        limit = 705 if re.search(r'side [2-6]', label) else 766 if 'help' in label else 667
+    for label, text, height, fits_wide, credits in shots:
+        limit = FOOTER + (705 if re.search(r'side [2-6]', label) else 766 if 'help' in label else 667)
         problems = []
         if height > limit: problems.append(f'height {height} over {limit}')
         if not fits_wide: problems.append('wider than the screen')
+        if not credits: problems.append('no credits line')
         if lang == 'en' and not write and snap.get(label, {}).get('text') != text: problems.append('text differs from the snapshot')
         if lang == 'he' and latin_left(text): problems.append('Latin left: ' + ' '.join(latin_left(text)[:6]))
         if lang == 'pl' and english_left(text, snap): problems.append('English left: ' + ' '.join(english_left(text, snap)[:6]))
@@ -132,7 +135,7 @@ async def main(lang, write):
         print('   FAIL page errors:', errors); bad += 1
     if write:
         assert lang == 'en', 'only the English snapshot is written'
-        SNAP.write_text(json.dumps({l: {'text': t, 'height': h} for l, t, h, _ in shots}, ensure_ascii=False, indent=1), encoding='utf-8')
+        SNAP.write_text(json.dumps({l: {'text': t, 'height': h} for l, t, h, _, _ in shots}, ensure_ascii=False, indent=1), encoding='utf-8')
         print('snapshot written:', SNAP.relative_to(ROOT))
     print(f'{lang}: {len(shots)} screens, {bad} problems')
     sys.exit(1 if bad else 0)

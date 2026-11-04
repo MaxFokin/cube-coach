@@ -14,6 +14,9 @@ restartBtn.addEventListener('click', () => {
   go('welcome');
 });
 
+themeBtn.addEventListener('click', () => { setTheme(isDark() ? 'light' : 'dark'); paintTheme(); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintTheme);
+
 let resizeTimer = null;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
@@ -26,7 +29,7 @@ window.addEventListener('resize', () => {
 
 let savedLang = null;
 try { savedLang = localStorage.getItem(LANG_KEY); } catch (e) { /* storage unavailable */ }
-setLang(savedLang in LANGS ? savedLang : 'en');
+applyLang(Object.keys(LANGS).includes(savedLang) ? savedLang : phoneLang());
 disarm();
 restore();
 useModel(app.cube);

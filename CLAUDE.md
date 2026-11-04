@@ -3,7 +3,8 @@
 Cube Coach is a one-file web app that walks a child through solving a 2x2 or 3x3 Rubik's cube. The
 child copies the cube's colors (by tapping or with the camera), the app checks that the copy is a real
 cube, works out a short solution, and shows every turn on an animated 3D cube with an arrow.
-It speaks English, Hebrew and Polish; the switch sits on the welcome screen.
+It speaks English, Hebrew and Polish, opening in the phone's language, with a switch top right on the
+welcome screen beside a light/dark toggle; a credits line (GitHub, LinkedIn, the repo) closes every screen.
 Max (GitHub `MaxFokin`) built it for Max's son in a Claude chat on 2026-10-31. On 2026-11-04 Claude
 Code reviewed every file, fixed what was found, and published it to GitHub Pages.
 
@@ -16,7 +17,7 @@ Live: https://maxfokin.github.io/cube-coach/
 
 1. `git pull`, then `python3 build.py --check` (must say index.html is up to date) and `npm test`
    (three Node tests must pass; run `npm install` first if `node_modules` is missing).
-2. If the work touches `ui.js`, `camera.js`, `strings.js` or the CSS, also run the browser tests
+2. If the work touches `ui.js`, `camera.js`, `strings.js`, the template or the CSS, also run the browser tests
    and the screen walks (see Testing).
 3. Report what passed, then ask Max what to work on. Don't change behavior, copy or design on your own.
 
@@ -38,9 +39,11 @@ Live: https://maxfokin.github.io/cube-coach/
 - `index.html` - the whole app in one file, BUILT from `src/` by `build.py`. Served by GitHub Pages.
 - `apple-touch-icon.png`, `.nojekyll` - home-screen icon, and a flag so Pages serves files as-is.
 - `src/` - the real sources, concatenated into one script inside one IIFE, in this order:
-  - `page.template.html` - head and body skeleton with `{{CSS}}` and `{{JS}}` placeholders.
+  - `page.template.html` - head and body skeleton with `{{CSS}}` and `{{JS}}` placeholders, the one-line
+    saved-theme script in the head, the header (brand, Start over, theme toggle) and the credits line.
   - `base.css` - tokens (light and dark), layout, stage, grids, palette, buttons, confetti, breakpoints.
-  - `extra.css` - cube choice tiles, 3x3 grids, green edge bars, thinking spinner, camera sheet.
+  - `extra.css` - cube choice tiles, header tools (language switch, theme toggle), credits line, 3x3 grids,
+    green edge bars, thinking spinner, camera sheet.
   - `core2.js` - 2x2 model: stickers, moves, deduction of the whole cube from 4 sides, validation,
     optimal solver. Also `cross` and `dot`, used by `core3.js` too.
   - `core3.js` - 3x3 model: Kociemba facelet order, all 18 moves, validation (pieces, twist, flip,
@@ -48,15 +51,16 @@ Live: https://maxfokin.github.io/cube-coach/
   - `colorread.js` - reads sticker colors from pixels (camera or photo) and finds the cube in a photo.
   - `strings.js` - every word a person reads, in English, Hebrew and Polish, plus `t()`, `moveText()`,
     `LANGS` and the current language. No DOM in this file.
-  - `ui.js` - app state, 3D stage (CSS 3D), turn animations, arrows, saving, every screen.
+  - `ui.js` - app state, language and theme, 3D stage (CSS 3D), turn animations, arrows, saving, every screen.
   - `camera.js` - the camera sheet: live camera, photo fallback with drag and pinch, live color dots.
-  - `main.js` - start-up: restore, build the stage, render; Start over button; resize handling.
+  - `main.js` - start-up: restore, build the stage, render; Start over and theme buttons; resize handling.
 - `build.py` - `python3 build.py` writes `index.html`; `--check` exits 1 if it is stale. Reads and
   writes UTF-8 explicitly (the copy has typographic apostrophes).
 - `tests/` - Node unit tests (`run.js`, `load.js`, `*.test.js`), Playwright browser tests (`e2e/`,
-  with `screens.py` walking every screen in one language), an offline copy of cubejs
-  (`vendor/cubejs`), fixtures (`fixtures/`: `en-screens.json` is the English text snapshot; generated
-  files are ignored).
+  with `screens.py` walking every screen in one language and `screenshots.py` taking the README's
+  phone screenshots), an offline copy of cubejs (`vendor/cubejs`), fixtures (`fixtures/`:
+  `en-screens.json` is the English text snapshot; generated files are ignored).
+- `docs/screenshots/` - the three phone screenshots in `README.md`, made by `tests/e2e/screenshots.py`.
 - `docs/superpowers/` - the design and plan documents of features built with Claude Code.
 - `floorplan/` - a visual map of the codebase made with the Floorplan plugin, committed on purpose so it
   travels with the repo and GitHub Pages serves it at https://maxfokin.github.io/cube-coach/floorplan/.
@@ -83,8 +87,9 @@ after an error), `unsure` (squares the camera wasn't sure about), `helpOpen`, `n
 Screens: `welcome` -> `side` (x4 or x6) -> 2x2: `checkTop` -> `checkBottom` -> `hold` / 3x3:
 `solving` -> `hold` -> `move` (one per turn) -> `done`. Error screens: `oops` (bad copy), `mismatch`
 (2x2 top or bottom didn't match), `solverError` (3x3 solver failed). `go(screen)` saves and renders.
-`render()` always stops loops, closes the camera, picks the right 3D model, and sets `data-screen`
-and `data-big` (bigger stage) on `#app`.
+`render()` always stops loops, closes the camera, picks the right 3D model, sets `data-screen`
+and `data-big` (bigger stage) on `#app`, and refreshes the chrome outside the panel (`refreshChrome`:
+the language switch, the theme toggle's label, the credits word).
 
 Progress is saved in `localStorage` under `cube-coach-v2`, including the solution, so a reload lands
 on the same move. `restore()` validates everything it reads back and keeps `checkBottom` as well as
@@ -109,24 +114,47 @@ gendered past tense. Cube notation (R, U′, F2), "Cube Coach" and the page titl
 Adding a language means adding it to `LANGS` and to every entry; `tests/strings.test.js` fails on any
 gap, mismatched placeholder, or malformed set.
 
-The current language is `lang` in `strings.js` (`useLang` sets it, no DOM). `setLang(code)` in
-`ui.js` also saves it under the localStorage key `cube-coach-lang`, apart from the progress record,
-so `resetAll()` and `restore()` never touch it, and sets `<html lang dir>`. `main.js` applies the
-saved language before `restore()` and the first render; the default is English and the phone's
-language is never guessed. The switch is one small segmented control under the brand in the header,
-built once from `LANGS` (`refreshLangs`): each segment shows the language's flag over its code
-(`LANGS[code].flag`, `.code`), the full name is its `aria-label`, and `aria-pressed` marks the
-current one. CSS shows it on the welcome screen only. Max chose this over name buttons on
-2026-11-04 after seeing mockups of five variants.
+The current language is `lang` in `strings.js` (`useLang` sets it, no DOM). `applyLang(code)` in
+`ui.js` sets it and `<html lang dir>`; `setLang(code)` (what the switch calls) also saves it under
+the localStorage key `cube-coach-lang`, apart from the progress record, so `resetAll()` and
+`restore()` never touch it. `main.js` applies the saved language before `restore()` and the first
+render; with nothing saved it takes the phone's language (`phoneLang`: the first entry of
+`navigator.languages` that is in `LANGS`, else English) without saving it, so an untouched app keeps
+following the phone, like the theme. Max asked for this on 2026-11-04 (the first version never
+guessed). The switch is one small segmented control in the header's tools group at the top right,
+beside the theme toggle, built once from `LANGS` (`refreshLangs`): each segment shows the language's
+flag over its code (`LANGS[code].flag`, `.code`), the full name is its `aria-label`, and
+`aria-pressed` marks the current one. CSS shows it on the welcome screen only, where Start over is
+`display: none` so the row has room (brand, switch and toggle fit one row at 360 px). Max chose the
+flag-over-code segments over name buttons on 2026-11-04 after seeing mockups of five variants, and
+moved the switch next to the toggle the same day.
 
 Hebrew sets `dir="rtl"`; text, headings, buttons and the camera sheet follow. The header never
-mirrors (`.top` is pinned left-to-right), so the brand and the switch stay top-left. Everything that shows
-the physical cube is pinned to `direction: ltr` in `base.css`: `.stage`, `.face-grid`, `.grid-row`,
-`.cam-view`, `.cam-guide`, `.move-icon`, `.chips`, `.bar`, `.palette`, `.key` (also
-`unicode-bidi: isolate`, so `U′` never renders as `′U`) and `.langs`. Fredoka already carries
+mirrors (`.top` is pinned left-to-right), so the brand stays top-left and the tools top-right.
+Everything that shows the physical cube is pinned to `direction: ltr` in `base.css`: `.stage`,
+`.face-grid`, `.grid-row`, `.cam-view`, `.cam-guide`, `.move-icon`, `.chips`, `.bar`, `.palette`,
+`.key` (also `unicode-bidi: isolate`, so `U′` never renders as `′U`) and `.langs`; the credits line
+is pinned too (`.credits`, see below). Fredoka already carries
 Hebrew glyphs; Hebrew text uses Assistant (`:root[lang="he"]` overrides `--text`). Polish color
 names are long, so `:root[lang="pl"] .sw` uses 12 px labels: at 14 px the palette row was 3 px
 wider than a 375 px phone, and mobile Chromium zooms out for that.
+
+### Theme and credits
+
+The color tokens follow `prefers-color-scheme` unless `<html data-theme>` is `light` or `dark`
+(`base.css`). The moon/sun button (`#theme`, top right on every screen) calls `setTheme`, which sets
+`data-theme` and saves it under `cube-coach-theme`, its own key like the language, so Start over and
+`restore()` never touch it; a one-line script in the template's head applies the saved value before
+the first paint. `paintTheme` sets the icon (a sun in the dark: the icon shows the way out) and the
+label (`darkMode` / `lightMode`); it runs on every render and when the phone's setting changes.
+Nothing is saved until the first tap, so until then the app follows the phone.
+
+The credits line (`<footer class="credits">` in the template) links GitHub and LinkedIn (@maxfokin)
+and the repo (the `source` string, the only translated word in it). It sits under every screen, at
+the bottom of the phone when the content is shorter: `.app` is a flex column with
+`min-height: 100dvh` minus the safe areas, and `.credits` has `margin-top: auto`. It is pinned
+`direction: ltr` and to Andika (with Assistant for Hebrew glyphs) so it looks the same in every
+language. Max picked "one quiet line" from four mockups on 2026-11-04.
 
 ### Cube models and conventions
 
@@ -230,6 +258,7 @@ node tests/e2e/fixtures.js        # random 3x3 scramble, synthetic side, fake ca
 source .venv/bin/activate && npm run e2e   # Playwright: 2x2 solve per language, 3x3 solve, photo path, fake camera
 npm run screens                   # every screen's English text and height against tests/fixtures/en-screens.json
 python3 tests/e2e/screens.py he   # the same walk in Hebrew (no Latin left) or Polish (pl: no English left)
+python3 tests/e2e/screenshots.py  # the README's phone screenshots into docs/screenshots (needs the internet for the fonts)
 ```
 
 Verified on 2026-11-04 with Node 26.6, npm 11.18, Python 3.9.6, Playwright 1.60.0. Chromium lives
@@ -242,23 +271,33 @@ square on either cube is always detected and the wrong square is always among th
 solid face (fixed case); the app's turns match cubejs; every shown solution solves the copied cube;
 a reload after confirming the 2x2 top lands on the bottom check. Every key and move exists in every
 language with matching placeholders and well-formed plural and color sets; the English text of the
-19 walked screens equals the snapshot; Hebrew screens hold no Latin word and Polish screens no
+22 walked screens equals the snapshot; Hebrew screens hold no Latin word and Polish screens no
 English word; a reload and Start over keep the language; the grids, the 3D stage, the move icon
-and the notation badge stay left-to-right in Hebrew; the switch works when localStorage throws.
+and the notation badge stay left-to-right in Hebrew; the switch and the theme toggle work when
+localStorage throws; a phone set to Hebrew or Polish opens in that language and any other in
+English, nothing is saved until a tap, and a tapped choice beats the phone; the switch and the
+toggle share the header's right group and Start over is gone from the welcome header; the toggle
+flips `data-theme`, survives a reload and Start over, and follows the phone until tapped; the
+credits line is on every screen with the same three links, order, font and direction in every
+language.
 
-Layout, measured in headless Chromium with realistic entries (page height / viewport height):
+Layout, measured in headless Chromium with realistic entries (page height / viewport height). The
+credits line adds 52 px below every screen (a 24 px gap and the line; 57 px with the web font),
+always under the buttons, so where a screen scrolls the buttons sit where they did before:
 
 | Screen                       | 375x667   | 360x640   |
 |------------------------------|-----------|-----------|
-| welcome, checks, hold, move, done, oops, mismatch | fits | fits, checkBottom 644 |
-| side 1 (2x2 and 3x3)         | 667, fits | 649       |
-| sides 2 and up (2x2 and 3x3) | 705       | 692       |
-| move with the help box open  | 766       | 757       |
+| welcome, hold, move, done, oops, mismatch | 667, fits | 640, fits |
+| checkTop / checkBottom       | 704 / 711 | 695 / 701 |
+| side 1 (2x2 and 3x3)         | 719       | 706       |
+| sides 2 and up (2x2 and 3x3) | 761       | 749       |
+| move with the help box open  | 823       | 814       |
 
-On sides 2 and up the extra 38 px is the "Show the turn again" link below the action buttons, so the
-buttons stay visible at 375x667. Everything fits at 390x844. Hebrew and Polish measure the same on
-the 19-screen walk of `screens.py` at 375x667: sides 2 and up 705 (Polish 703), the move screen with
-the help box open 766, everything else fits.
+On sides 2 and up the extra 38 px above the credits line is the "Show the turn again" link below the
+action buttons. At 390x844 the welcome and move screens fit with the credits line at the bottom edge
+(see `docs/screenshots/`); the side screens scroll to it. Hebrew and Polish measure the same on the
+22-screen walk of `screens.py` at 375x667 (Polish sides 717 and 759). `screens.py` allows each
+screen its old limit plus the line (`FOOTER`).
 
 ## Deployment
 
@@ -277,8 +316,10 @@ the help box open 766, everything else fits.
 
 ## Known weak points
 
-- Sides 2 and up scroll by 38 px on a 375x667 phone (the replay link), and every side screen scrolls
-  a little at 360x640. Fixing it means a design decision (move or drop the link, or a shorter stage).
+- Every side and check screen scrolls on a 375x667 phone (side 1 by 52 px, sides 2 and up by 94 px,
+  the checks by 37-44 px): the credits line under the buttons, plus the replay link on sides 2 and
+  up. The buttons themselves are above the fold. Fixing it means a design decision (hide the line
+  while copying, move or drop the link, or a shorter stage).
 - Camera color reading was tuned on four photos. Red vs orange and glare are the weak spots.
 - Not tested on a real iPhone or Android device; all browser testing was headless Chromium with
   phone-sized viewports, light and dark mode, 360x640 to 768x1024.
@@ -331,3 +372,7 @@ Built on 2026-10-31 in one Claude chat, in this order:
    welcome screen, right-to-left Hebrew with the cube pinned left-to-right, per-language browser
    tests and screen walks. Design, plan and the final review in `docs/superpowers/`. Merged to main
    and live the same day.
+9. 2026-11-04, Claude Code, branch `footer`: a credits line (GitHub, LinkedIn, the repo) under every
+   screen, a light/dark toggle, the language switch moved beside it at the top right (Start over
+   leaves the welcome header), and the language picked from the phone until the switch is tapped.
+   Picked from four mockups shown in the cmux browser. README rewritten with phone screenshots.

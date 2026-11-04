@@ -369,14 +369,22 @@ function restore() {
 // ===== Language =====
 // Kept under its own key, apart from the progress record, so Start over and restore() never touch it.
 const LANG_KEY = 'cube-coach-lang';
-function setLang(code) {
+// applyLang switches the words without saving, so an untouched app keeps following the phone;
+// setLang (the switch) saves the choice.
+function applyLang(code) {
   useLang(code);
-  try { localStorage.setItem(LANG_KEY, code); } catch (e) { /* storage unavailable */ }
   document.documentElement.lang = code;
   document.documentElement.dir = LANGS[code].dir;
 }
-// The switch: one segmented control under the brand, built once from LANGS. CSS shows it on the
-// welcome screen only. Each segment is the language's flag over its code; the full name is the label.
+function setLang(code) {
+  applyLang(code);
+  try { localStorage.setItem(LANG_KEY, code); } catch (e) { /* storage unavailable */ }
+}
+// The phone's language when it is one of ours, else English.
+const phoneLang = () => (navigator.languages || [navigator.language]).map((l) => String(l).slice(0, 2).toLowerCase()).find((l) => Object.keys(LANGS).includes(l)) || 'en';
+// The switch: one segmented control in the header's tools group, beside the theme toggle, built
+// once from LANGS. CSS shows it on the welcome screen only. Each segment is the language's flag
+// over its code; the full name is the label.
 let langsEl = null;
 function refreshLangs() {
   if (!langsEl) {
@@ -385,10 +393,36 @@ function refreshLangs() {
     langsEl.innerHTML = Object.keys(LANGS).map((code) =>
       `<button class="lang" type="button" data-lang="${code}" lang="${code}" aria-label="${LANGS[code].name}"><i>${LANGS[code].flag}</i>${LANGS[code].code}</button>`).join('');
     langsEl.querySelectorAll('.lang').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); disarm(); render(false); }));
-    $('.top').appendChild(langsEl);
+    $('.tools').insertBefore(langsEl, themeBtn);
   }
   langsEl.setAttribute('aria-label', t('language'));
   langsEl.querySelectorAll('.lang').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+}
+
+// ===== Theme =====
+// Light or dark on request; without a saved choice the app follows the phone. The same key is read
+// by a one-line script in the head, so a saved choice is applied before the first paint.
+const THEME_KEY = 'cube-coach-theme';
+const themeBtn = $('#theme');
+function isDark() {
+  const mode = document.documentElement.dataset.theme;
+  return mode === 'dark' || (mode !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+}
+function setTheme(mode) {
+  document.documentElement.dataset.theme = mode;
+  try { localStorage.setItem(THEME_KEY, mode); } catch (e) { /* storage unavailable */ }
+}
+// The icon shows the way out (a sun in the dark), the label says where it leads.
+function paintTheme() {
+  themeBtn.classList.toggle('dark', isDark());
+  themeBtn.setAttribute('aria-label', t(isDark() ? 'lightMode' : 'darkMode'));
+}
+
+// Everything outside the panel that has words: the switch, the theme toggle, the credits line.
+function refreshChrome() {
+  refreshLangs();
+  paintTheme();
+  $('#source-word').textContent = t('source');
 }
 
 // ===== Screens =====
@@ -456,7 +490,7 @@ function render(animate) {
   spinnerEl.classList.remove('spinning');
   useModel(app.cube);
   appEl.dataset.screen = app.screen;
-  refreshLangs();
+  refreshChrome();
   const big = ['welcome', 'checkTop', 'checkBottom', 'hold', 'move', 'done', 'solving', 'solverError'].includes(app.screen);
   if (big) appEl.dataset.big = ''; else delete appEl.dataset.big;
   ({
