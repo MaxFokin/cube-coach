@@ -1,0 +1,78 @@
+{
+ "welcome": {
+  "text": "Let’s solve your cube\n\nCopy your cube’s colors and I’ll show you every turn. Which cube do you have?\n\n2×2\nCopy 4 sides\n3×3\nCopy all 6 sides\nStart over",
+  "height": 667
+ },
+ "side 1 empty": {
+  "text": "Side 1 of 4\nPick a side to start\n\nHold any side facing you. Keep the same side on top from now on.\n\n?\n?\n?\n?\nPhoto\nWhite\nYellow\nRed\nOrange\nBlue\nGreen\nNext side\nStart over",
+  "height": 667
+ },
+ "camera sheet": {
+  "text": "Photo of side 1\n\nFit the side inside the square, with the top you picked at the top.\n\nThe live camera didn’t start, so take a photo instead.\n\nGet close, so the side fills most of the photo.\n\nTake a photo\nChoose a photo\n\nBright room, no flash. Hold the phone straight at the side.\n\nCancel Use these colors",
+  "height": 667
+ },
+ "oops": {
+  "text": "One of these is wrong\n\nOne of the marked squares doesn’t match your cube. Let’s go through the sides and look closely at them.\n\nSide 1\nSide 3\nCheck the marked squares\nStart over",
+  "height": 667
+ },
+ "side 1 review": {
+  "text": "Side 1 of 4\nBack to side 1\n\nTurn your cube until side 1 faces you, like the picture. Fix any square that’s wrong.\n\nPhoto\nWhite\nYellow\nRed\nOrange\nBlue\nGreen\nNext side\nStart over",
+  "height": 667
+ },
+ "checkTop": {
+  "text": "Is this your top?\n\nTurn back to side 1. Then look down at the top of your cube.\n\nSide 1 is on this edge\nNo\nYes\nStart over",
+  "height": 667
+ },
+ "mismatch": {
+  "text": "Then a side got mixed up\n\nLet’s go through the sides again. Keep the same top as you turn, and look closely at red and orange.\n\nCheck the sides\nStart over",
+  "height": 667
+ },
+ "checkTop again": {
+  "text": "Is this your top?\n\nTurn back to side 1. Then look down at the top of your cube.\n\nSide 1 is on this edge\nNo\nYes\nStart over",
+  "height": 667
+ },
+ "checkBottom": {
+  "text": "And is this your bottom?\n\nTip the top away from you, so the bottom faces you.\n\nSide 1 is on this edge\nNo\nYes\nStart over",
+  "height": 667
+ },
+ "hold": {
+  "text": "Hold your cube like this\n\nSide 1 faces you, with the same top as before. Keep holding it this way and only turn the part I show you.\n\nI’m ready\nStart over",
+  "height": 667
+ },
+ "move 1": {
+  "text": "Move 1 of 9\nU′\nTop to the right\n\nTurn the top layer to the right.\n\nPrevious\nI did it\nMy cube looks different\nStart over",
+  "height": 667
+ },
+ "move 1 help open": {
+  "text": "Move 1 of 9\nU′\nTop to the right\n\nTurn the top layer to the right.\n\nPrevious\nI did it\nMy cube looks different\n\nIf you turned the whole cube, turn it back so it matches the picture.\n\nIf a turn went wrong, copy your cube again and I’ll find new moves.\n\nCopy my cube again\nStart over",
+  "height": 766
+ },
+ "done": {
+  "text": "Solved!\n\nThat took 9 turns. Mix it up and copy it again to go another round.\n\nSolve another\nStart over",
+  "height": 667
+ },
+ "side 1 (3x3)": {
+  "text": "Side 1 of 6\nGreen faces you\n\nHold your cube with the green middle facing you and white on top.\n\n?\n?\n?\n?\n?\n?\n?\n?\nPhoto\nWhite\nYellow\nRed\nOrange\nBlue\nGreen\nNext side\nStart over",
+  "height": 667
+ },
+ "side 1 filled (3x3)": {
+  "text": "Side 1 of 6\nGreen faces you\n\nHold your cube with the green middle facing you and white on top.\n\nPhoto\nWhite\nYellow\nRed\nOrange\nBlue\nGreen\nNext side\nStart over",
+  "height": 667
+ },
+ "side 2 (3x3)": {
+  "text": "Side 2 of 6\nTurn it to the left\n\nNow the red middle faces you. Keep white on top.\n\n?\n?\n?\n?\n?\n?\n?\n?\nPhoto\nWhite\nYellow\nRed\nOrange\nBlue\nGreen\nBack\nNext side\nShow the turn again\nStart over",
+  "height": 705
+ },
+ "hold (3x3)": {
+  "text": "Hold your cube like this\n\nGreen faces you and white is on top. Keep holding it this way and only turn the part I show you.\n\nI’m ready\nStart over",
+  "height": 667
+ },
+ "move 1 (3x3)": {
+  "text": "Move 1 of 17\nD2\n2×\nBottom, two turns\n\nTurn the bottom layer two turns. Either way works.\n\nPrevious\nI did it\nMy cube looks different\nStart over",
+  "height": 667
+ },
+ "solverError": {
+  "text": "The 3×3 helper didn’t load\n\nIt needs the internet the first time. Check the connection, then try again.\n\nTry again\nStart over",
+  "height": 667
+ }
+}

@@ -12,6 +12,7 @@ Live: https://maxfokin.github.io/cube-coach/ (open it on a phone, then Share > A
 - `npm install` then `npm test` runs the Node tests.
 - Browser tests, once: `python3 -m venv .venv && .venv/bin/pip install playwright && .venv/bin/playwright install chromium`.
   Then `node tests/e2e/fixtures.js` and `source .venv/bin/activate && npm run e2e`.
+- `npm run screens` (venv active) compares every screen's English text and height with `tests/fixtures/en-screens.json`.
 - See `CLAUDE.md` for how everything works.
 
 ## Credits

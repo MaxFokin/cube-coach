@@ -6,7 +6,8 @@
     "build": "python3 build.py",
     "check": "python3 build.py --check",
     "test": "node tests/run.js",
-    "e2e": "python3 tests/e2e/flows.py && python3 tests/e2e/camera.py"
+    "e2e": "python3 tests/e2e/flows.py && python3 tests/e2e/camera.py",
+    "screens": "python3 tests/e2e/screens.py en"
   },
   "devDependencies": {
     "cubejs": "1.3.2",
