@@ -1,6 +1,6 @@
 # Cube Coach in Hebrew and Polish - design
 
-Date: 2026-11-04. Status: draft for Max's approval. Nothing is built yet.
+Date: 2026-11-04. Status: approved by Max on 2026-11-04 and built on branch `translations`.
 
 ## Intent
 
@@ -115,10 +115,11 @@ translated line before it ships. The app must stay exactly as good in English.
   `.cam-view` and `.cam-guide`, `.move-icon`, `.chips` and `.bar` (progress reads left to right,
   like the move icons), and `.palette` (the colors keep the same order in every language, so the
   child sees one familiar row).
-- Rules that name a physical side switch to logical properties: the Photo button beside the grid
-  (`left: calc(100% + 12px)` becomes `inset-inline-start`), the `.over` badge offset,
-  `.move-head h1`, `.help` and `.howto` (`text-align: left` becomes `start`). The builder finds the
-  rest by searching the CSS for `left`, `right` and `text-align`.
+- Rules that name a physical side switch to logical properties: `.move-head h1`, `.help` and `.howto`
+  (`text-align: left` becomes `start`). The Photo button beside the grid and the Retake button in the
+  camera view stay on the right in every language, because `.grid-row` and `.cam-view` are pinned
+  with the cube (decided during the build: the button belongs to the physical grid). The builder
+  finds the rest by searching the CSS for `left`, `right` and `text-align`.
 - Left and right inside the move instructions are physical directions and are translated as such.
 
 ### Fonts

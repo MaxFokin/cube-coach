@@ -3,6 +3,7 @@
 Cube Coach is a one-file web app that walks a child through solving a 2x2 or 3x3 Rubik's cube. The
 child copies the cube's colors (by tapping or with the camera), the app checks that the copy is a real
 cube, works out a short solution, and shows every turn on an animated 3D cube with an arrow.
+It speaks English, Hebrew and Polish; the switch sits on the welcome screen.
 Max (GitHub `MaxFokin`) built it for Max's son in a Claude chat on 2026-10-31. On 2026-11-04 Claude
 Code reviewed every file, fixed what was found, and published it to GitHub Pages.
 
@@ -15,7 +16,8 @@ Live: https://maxfokin.github.io/cube-coach/
 
 1. `git pull`, then `python3 build.py --check` (must say index.html is up to date) and `npm test`
    (three Node tests must pass; run `npm install` first if `node_modules` is missing).
-2. If the work touches `ui.js`, `camera.js` or the CSS, also run the browser tests (see Testing).
+2. If the work touches `ui.js`, `camera.js`, `strings.js` or the CSS, also run the browser tests
+   and the screen walks (see Testing).
 3. Report what passed, then ask Max what to work on. Don't change behavior, copy or design on your own.
 
 ## How we work together
@@ -44,13 +46,18 @@ Live: https://maxfokin.github.io/cube-coach/
   - `core3.js` - 3x3 model: Kociemba facelet order, all 18 moves, validation (pieces, twist, flip,
     parity), turned-side and single-square fix search, cubejs facelet string.
   - `colorread.js` - reads sticker colors from pixels (camera or photo) and finds the cube in a photo.
+  - `strings.js` - every word a person reads, in English, Hebrew and Polish, plus `t()`, `moveText()`,
+    `LANGS` and the current language. No DOM in this file.
   - `ui.js` - app state, 3D stage (CSS 3D), turn animations, arrows, saving, every screen.
   - `camera.js` - the camera sheet: live camera, photo fallback with drag and pinch, live color dots.
   - `main.js` - start-up: restore, build the stage, render; Start over button; resize handling.
 - `build.py` - `python3 build.py` writes `index.html`; `--check` exits 1 if it is stale. Reads and
   writes UTF-8 explicitly (the copy has typographic apostrophes).
-- `tests/` - Node unit tests (`run.js`, `load.js`, `*.test.js`), Playwright browser tests (`e2e/`),
-  an offline copy of cubejs (`vendor/cubejs`), fixtures (`fixtures/`, generated files are ignored).
+- `tests/` - Node unit tests (`run.js`, `load.js`, `*.test.js`), Playwright browser tests (`e2e/`,
+  with `screens.py` walking every screen in one language), an offline copy of cubejs
+  (`vendor/cubejs`), fixtures (`fixtures/`: `en-screens.json` is the English text snapshot; generated
+  files are ignored).
+- `docs/superpowers/` - the design and plan documents of features built with Claude Code.
 - `package.json` / `package-lock.json` - cubejs 1.3.2 and sharp 0.34.5, for tests only.
 - `.venv/` - Python venv with Playwright for the browser tests (ignored by git).
 
@@ -76,6 +83,38 @@ and `data-big` (bigger stage) on `#app`.
 Progress is saved in `localStorage` under `cube-coach-v2`, including the solution, so a reload lands
 on the same move. `restore()` validates everything it reads back and keeps `checkBottom` as well as
 `mismatch`; any other mid-check screen restarts at `checkTop`.
+
+### Languages
+
+Every word a person reads lives in `src/strings.js`, in `STRINGS[key] = { en, he, pl }`, and is read
+through `t(key, vars)`. A value is a plain string with `{name}` placeholders, a plural set (`one`,
+`two`, `few`, `many`, `other`; `other` is required; picked with `Intl.PluralRules` from `vars.n`), or
+a per-color set keyed W Y R O B G (picked with `vars.color`); sets nest either way. `{color}` and
+`{Color}` are filled with the color's name in the current language, every other `{name}` from
+`vars`. A missing language falls back to English; an unknown key returns the key. Move names are in
+`MOVE_TEXT[move] = { en: [title, instruction], he, pl }`, read with `moveText(m)`.
+
+Rules for the words: whole sentences may be joined with a space (`fixLine`, `iThink`), words never;
+any sentence whose color word inflects is written per color (Polish cases, Hebrew gender). Hebrew
+addresses the child in masculine singular; Polish uses imperatives and impersonal phrasing, never a
+gendered past tense. Cube notation (R, U′, F2), "Cube Coach" and the page title are not translated.
+Adding a language means adding it to `LANGS` and to every entry; `tests/strings.test.js` fails on any
+gap, mismatched placeholder, or malformed set.
+
+The current language is `lang` in `strings.js` (`useLang` sets it, no DOM). `setLang(code)` in
+`ui.js` also saves it under the localStorage key `cube-coach-lang`, apart from the progress record,
+so `resetAll()` and `restore()` never touch it, and sets `<html lang dir>`. `main.js` applies the
+saved language before `restore()` and the first render; the default is English and the phone's
+language is never guessed. The switch is a row of `.lang` buttons on the welcome screen only, built
+from `LANGS` in its order, each labelled with the language's own name and `aria-pressed`.
+
+Hebrew sets `dir="rtl"`; text, headings, buttons and the camera sheet follow. Everything that shows
+the physical cube is pinned to `direction: ltr` in `base.css`: `.stage`, `.face-grid`, `.grid-row`,
+`.cam-view`, `.cam-guide`, `.move-icon`, `.chips`, `.bar`, `.palette`, `.key` (also
+`unicode-bidi: isolate`, so `U′` never renders as `′U`) and `.langs`. Fredoka already carries
+Hebrew glyphs; Hebrew text uses Assistant (`:root[lang="he"]` overrides `--text`). Polish color
+names are long, so `:root[lang="pl"] .sw` uses 12 px labels: at 14 px the palette row was 3 px
+wider than a 375 px phone, and mobile Chromium zooms out for that.
 
 ### Cube models and conventions
 
@@ -164,17 +203,21 @@ what is wrong and never apologize. Fonts: Fredoka (display) and Andika (text, ma
 readers), from Google Fonts with real fallbacks. Colors are tokens on `:root` with dark-mode values;
 cube sticker colors are fixed hex values in `HEX`. The coach color (magenta) is used only for arrows
 and highlights, never for cube colors, so it reads on every sticker. The `@media (max-height: 720px)`
-block is the small-phone layout; see Known weak points for where it still scrolls.
+block is the small-phone layout; see Known weak points for where it still scrolls. Translations are
+drafted by Claude Code and reviewed by Max before they ship; the review surface is `src/strings.js`,
+where each key shows its three languages together.
 
 ## Testing
 
 ```
 npm install                       # cubejs 1.3.2 and sharp 0.34.5, for tests only
-npm test                          # Node: core2, core3 (cross-checked against cubejs), colorread
+npm test                          # Node: strings, core2, core3 (cross-checked against cubejs), colorread
 python3 build.py --check          # index.html matches src/
 python3 -m venv .venv && .venv/bin/pip install playwright && .venv/bin/playwright install chromium
 node tests/e2e/fixtures.js        # random 3x3 scramble, synthetic side, fake camera clip
-source .venv/bin/activate && npm run e2e   # Playwright: 2x2 and 3x3 solves, photo path, fake camera
+source .venv/bin/activate && npm run e2e   # Playwright: 2x2 solve per language, 3x3 solve, photo path, fake camera
+npm run screens                   # every screen's English text and height against tests/fixtures/en-screens.json
+python3 tests/e2e/screens.py he   # the same walk in Hebrew (no Latin left) or Polish (pl: no English left)
 ```
 
 Verified on 2026-11-04 with Node 26.6, npm 11.18, Python 3.9.6, Playwright 1.60.0. Chromium lives
@@ -185,7 +228,11 @@ Facts the tests guarantee: the 2x2 photo cube solves in `U' R' F R U2 R2 U F' U`
 square on either cube is always detected and the wrong square is always among the suggestions; a
 3x3 side copied a quarter turn off is fixed at least 147 times in 150 (random) and always next to a
 solid face (fixed case); the app's turns match cubejs; every shown solution solves the copied cube;
-a reload after confirming the 2x2 top lands on the bottom check.
+a reload after confirming the 2x2 top lands on the bottom check. Every key and move exists in every
+language with matching placeholders and well-formed plural and color sets; the English text of the
+19 walked screens equals the snapshot; Hebrew screens hold no Latin word and Polish screens no
+English word; a reload and Start over keep the language; the grids, the 3D stage, the move icon
+and the notation badge stay left-to-right in Hebrew; the switch works when localStorage throws.
 
 Layout, measured in headless Chromium with realistic entries (page height / viewport height):
 
@@ -197,7 +244,9 @@ Layout, measured in headless Chromium with realistic entries (page height / view
 | move with the help box open  | 766       | 757       |
 
 On sides 2 and up the extra 38 px is the "Show the turn again" link below the action buttons, so the
-buttons stay visible at 375x667. Everything fits at 390x844.
+buttons stay visible at 375x667. Everything fits at 390x844. Hebrew and Polish measure the same on
+the 19-screen walk of `screens.py` at 375x667: sides 2 and up 705 (Polish 703), the move screen with
+the help box open 766, everything else fits.
 
 ## Deployment
 
@@ -230,7 +279,10 @@ buttons stay visible at 375x667. Everything fits at 390x844.
 - Test code repeats itself: the synthetic 3x3 side is built in both `colorread.test.js` and
   `e2e/fixtures.js`, `entryOf` exists twice, and `SOLVED2` lives in `ui.js` but is recomputed in
   `core2.test.js`. Harmless, but change both copies together.
-- English only.
+- The Hebrew and Polish were drafted by Claude Code on 2026-11-04 and wait for Max's review; Hebrew is
+  masculine singular throughout.
+- `screens.py` cannot capture the short `solving` screen (the solver blocks the thread), so its two
+  strings are covered by the strings test only.
 
 ## Backlog ideas (not started)
 
@@ -262,3 +314,7 @@ Built on 2026-10-31 in one Claude chat, in this order:
    sheet, the live camera staying off after a busy camera, and locale-dependent builds. Added the
    regression tests and the layout measurements above, then pushed to GitHub. Max made the repo
    public and Pages went live the same day.
+8. 2026-11-04, Claude Code, branch `translations`: Hebrew and Polish. All copy moved into
+   `src/strings.js` with English proven unchanged by a screen snapshot, a language switch on the
+   welcome screen, right-to-left Hebrew with the cube pinned left-to-right, per-language browser
+   tests and screen walks. Design and plan in `docs/superpowers/`.
