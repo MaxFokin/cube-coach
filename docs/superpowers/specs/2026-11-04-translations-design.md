@@ -137,7 +137,8 @@ translated line before it ships. The app must stay exactly as good in English.
 - Polish runs about a quarter longer than English. The small-phone block (`max-height: 720px`) and
   the `31ch` lead width still apply. The builder measures the same screens CLAUDE.md lists, at
   375x667 in all three languages, and keeps each screen within today's numbers (side 1 fits; later
-  sides within 705). Shorten the Polish or Hebrew wording before touching the CSS.
+  sides within 705). Shorten the Polish or Hebrew wording first; a small CSS change is allowed
+  when faithful wording still does not fit (Max, 2026-11-04, for the Polish side-1 screens).
 
 ### Tests
 
