@@ -1,0 +1,7 @@
+node_modules/
+tests/fixtures/generated/
+tests/fixtures/photos/*.jpg
+__pycache__/
+.DS_Store
+cube-coach-project.zip
+.venv/
