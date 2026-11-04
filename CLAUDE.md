@@ -58,6 +58,12 @@ Live: https://maxfokin.github.io/cube-coach/
   (`vendor/cubejs`), fixtures (`fixtures/`: `en-screens.json` is the English text snapshot; generated
   files are ignored).
 - `docs/superpowers/` - the design and plan documents of features built with Claude Code.
+- `floorplan/` - a visual map of the codebase made with the Floorplan plugin, committed on purpose so it
+  travels with the repo and GitHub Pages serves it at https://maxfokin.github.io/cube-coach/floorplan/.
+  `architecture.json`, `descriptions/` and `recent-work.json` are hand-written; `index.html`, `graph.json`,
+  `serve.mjs` and `query.mjs` are generated; `.cache/` stays out of git. Ask to "update the floorplan"
+  (`/floorplan:floorplan`) after bigger changes, then commit the folder with the change. If a build ever
+  restores the folder's self-ignoring `.gitignore`, the tracked files stay tracked; put `.cache/` back.
 - `package.json` / `package-lock.json` - cubejs 1.3.2 and sharp 0.34.5, for tests only.
 - `.venv/` - Python venv with Playwright for the browser tests (ignored by git).
 

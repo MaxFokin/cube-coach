@@ -1,0 +1,96 @@
+{
+  "updatedAt": "2026-11-04T14:54:22Z",
+  "tasks": [
+    {
+      "title": "Language switch under the brand",
+      "request": "A small switch under the Cube Coach title with a flag and the code for each language; the header should always stay on the left",
+      "summary": "The switch is now one small segmented control under the brand, each language's flag over its code, shown on the welcome screen only; the header stays top-left in Hebrew. Chosen from five mocked variants and live since 2026-11-04.",
+      "items": [
+        {
+          "ref": "src/ui.js",
+          "change": "changed",
+          "note": "Builds the switch once inside the header and marks the current language on every screen change, instead of drawing name buttons into the welcome screen."
+        },
+        {
+          "ref": "src/extra.css",
+          "change": "changed",
+          "note": "The segmented look with a flag over each code, shown on the welcome screen only; the header no longer mirrors in Hebrew."
+        },
+        {
+          "ref": "src/strings.js",
+          "change": "changed",
+          "note": "Each language now carries its flag and code next to its name and direction."
+        },
+        {
+          "ref": "tests/e2e/flows.py",
+          "change": "changed",
+          "note": "Checks the switch sits in the header, shows the codes, and hides on every other screen."
+        }
+      ]
+    },
+    {
+      "title": "Hebrew and Polish",
+      "request": "Translations to Hebrew and Polish with a switch on the home screen only; Max reviews the language",
+      "summary": "Every word moved into one table with English proven unchanged by a screen snapshot; Hebrew reads right to left with the cube and grids pinned; both languages shipped on 2026-11-04 after Max tried the app. The reviewer's list of lines a native speaker may pause at is still open for Max.",
+      "items": [
+        {
+          "ref": "src/strings.js",
+          "change": "new",
+          "note": "The one place every sentence lives in all three languages, with plural and per-color forms so Polish cases and Hebrew gender read right."
+        },
+        {
+          "ref": "src/ui.js",
+          "change": "changed",
+          "note": "Reads every word through the table, saves the chosen language apart from progress, and sets the page direction for Hebrew."
+        },
+        {
+          "ref": "src/camera.js",
+          "change": "changed",
+          "note": "Every camera-sheet sentence and tip comes from the table."
+        },
+        {
+          "ref": "src/base.css",
+          "change": "changed",
+          "note": "Pins the 3D cube, grids, arrows, palette and notation left-to-right in Hebrew and gives Hebrew text a font that has its letters."
+        },
+        {
+          "ref": "tests/strings.test.js",
+          "change": "new",
+          "note": "Fails on any sentence missing in a language, a mismatched placeholder, or a malformed plural or color set."
+        },
+        {
+          "ref": "tests/e2e/screens.py",
+          "change": "new",
+          "note": "Walks 22 screens per language: English must match its snapshot, Hebrew must hold no Latin word, Polish no English word, and every screen must fit the phone."
+        }
+      ]
+    },
+    {
+      "title": "Review fixes",
+      "request": "Verify all the code and fix what needs fixing",
+      "summary": "A file-by-file review plus a second reviewer found six things worth fixing, all fixed with tests and shipped the same morning; the browser tests were run for the first time.",
+      "items": [
+        {
+          "ref": "src/core3.js",
+          "change": "changed",
+          "note": "A nearly solved cube with one side copied turned around used to fail as ambiguous; the search now counts cubes, not turn combinations, and prefers the fewest turned sides."
+        },
+        {
+          "ref": "src/ui.js",
+          "change": "changed",
+          "note": "The 3x3 solver can no longer be set up twice by two overlapping solving screens, and a reload on the bottom check lands on the bottom check."
+        },
+        {
+          "ref": "src/camera.js",
+          "change": "changed",
+          "note": "A camera stream that arrives after its sheet was cancelled is stopped instead of leaking, and a busy camera no longer turns the live camera off for good."
+        },
+        {
+          "ref": "build.py",
+          "change": "changed",
+          "note": "Reads and writes the pieces as UTF-8 so the build gives the same page on any machine."
+        }
+      ]
+    }
+  ]
+}

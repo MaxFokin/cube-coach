@@ -1,0 +1,16 @@
+{
+  "files": {
+    "src/camera.js": {
+      "name": "Camera sheet",
+      "description": "Opens the live camera or a photo, lets the child fit the side in the square, shows the colors it reads, and fills the grid."
+    },
+    "src/main.js": {
+      "name": "Start-up",
+      "description": "Starts the app: applies the saved language, restores progress, builds the cube, and runs the two-tap Start over button."
+    },
+    "src/ui.js": {
+      "name": "Screens and 3D cube",
+      "description": "Draws every screen, animates the 3D cube and its arrows, saves progress on the phone, and loads the 3x3 solver when it is needed."
+    }
+  }
+}

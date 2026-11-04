@@ -1,0 +1,8 @@
+{
+  "files": {
+    "src/strings.js": {
+      "name": "Words in three languages",
+      "description": "Holds every sentence in English, Hebrew and Polish, with plural forms and per-color sentences, and picks the right one for the current language."
+    }
+  }
+}

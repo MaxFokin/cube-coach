@@ -1,0 +1,16 @@
+{
+  "files": {
+    "src/base.css": {
+      "name": "Colors, fonts and layout",
+      "description": "Sets the look of every screen: the colors in light and dark mode, the fonts, the 3D stage, grids, buttons and small-phone sizes."
+    },
+    "src/extra.css": {
+      "name": "Cube picker, switch and camera look",
+      "description": "Styles the cube choice, the language switch under the brand, the 3x3 grids, the thinking spinner and the camera sheet."
+    },
+    "src/page.template.html": {
+      "name": "Page skeleton",
+      "description": "The empty page the pieces are poured into: the title, icon and fonts, the header, the 3D stage and the panel."
+    }
+  }
+}

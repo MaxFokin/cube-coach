@@ -1,0 +1,28 @@
+{
+  "files": {
+    "tests/colorread.test.js": {
+      "name": "Color reading tests",
+      "description": "Reads a synthetic 3x3 side exactly and the four real photos of the family's cube at least 15 of 16 squares right."
+    },
+    "tests/core2.test.js": {
+      "name": "2x2 brain tests",
+      "description": "Checks the known photo cube's 9-turn solution, 200 random cubes, both copy orders, and that a wrong square is always caught."
+    },
+    "tests/core3.test.js": {
+      "name": "3x3 brain tests",
+      "description": "Checks the turns against the cubejs solver, that every solution solves the cube, that a turned side is fixed, and that a wrong square is caught."
+    },
+    "tests/load.js": {
+      "name": "Test loader",
+      "description": "Reads the source pieces straight from src and runs them so the quick checks can call the cube brains, color reading and words."
+    },
+    "tests/run.js": {
+      "name": "Run all quick checks",
+      "description": "Runs the words, 2x2, 3x3 and color reading checks one after another; this is what npm test calls."
+    },
+    "tests/strings.test.js": {
+      "name": "Words tests",
+      "description": "Checks every sentence exists in every language with matching placeholders, well-formed plural and color sets, and no shouting or em dashes."
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "files": {
+    "build.py": {
+      "name": "Build step",
+      "description": "Glues the CSS and JavaScript pieces into index.html in a fixed order, or checks that the page is up to date."
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "files": {
+    "index.html": {
+      "name": "Published page",
+      "description": "The whole app in one file, generated from src by the build step and served to phones by GitHub Pages; never edited by hand."
+    }
+  }
+}

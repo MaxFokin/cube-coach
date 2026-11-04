@@ -1,0 +1,8 @@
+{
+  "files": {
+    "src/colorread.js": {
+      "name": "Color reading",
+      "description": "Finds the cube in a photo and judges each sticker's color from its most vivid pixels, marking the doubtful ones."
+    }
+  }
+}

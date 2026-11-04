@@ -1,0 +1,12 @@
+{
+  "files": {
+    "src/core2.js": {
+      "name": "2x2 cube brain",
+      "description": "Works out the whole 2x2 from four copied sides, checks it is a real cube, points at a wrong square, and finds the shortest solution."
+    },
+    "src/core3.js": {
+      "name": "3x3 cube brain",
+      "description": "Checks a copied 3x3 is a real cube, repairs a side copied the wrong way round, points at a wrong square, and prepares the cube for the solver."
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "files": {
+    "tests/e2e/camera.py": {
+      "name": "Camera tests",
+      "description": "Copies sides from the family's real photos, a synthetic 3x3 side and a fake live camera, and checks the colors read right."
+    },
+    "tests/e2e/fixtures.js": {
+      "name": "Test fixtures",
+      "description": "Makes what the browser tests need: a random 3x3 scramble, a synthetic 3x3 side photo, and a fake camera clip from a real photo."
+    },
+    "tests/e2e/flows.py": {
+      "name": "Solve flow tests",
+      "description": "Solves the known 2x2 in every language and a 3x3 in a phone-sized browser, checking the switch, reloads, Start over and blocked storage."
+    },
+    "tests/e2e/screens.py": {
+      "name": "Screen walk",
+      "description": "Walks 22 screens in one language, comparing English text with its snapshot, checking no foreign words remain, and measuring heights."
+    }
+  }
+}
