@@ -42,4 +42,7 @@ useLang('xx');
 assert.strictEqual(t('_probe', { n: 1 }), 'That took 1 turn.', 'unknown language falls back to English');
 useLang('en');
 delete STRINGS._probe; delete STRINGS._probeColor; delete STRINGS._probeNest;
+useLang('he');
+assert(t('doneLead', { n: 1 }) !== t('doneLead', { n: 2 }), 'Hebrew one and other differ');
+useLang('en');
 console.log('strings: ok (' + Object.keys(STRINGS).length + ' keys, ' + Object.keys(LANGS).join(' ') + ')');
