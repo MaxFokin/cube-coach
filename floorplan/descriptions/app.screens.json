@@ -6,7 +6,7 @@
     },
     "src/main.js": {
       "name": "Start-up",
-      "description": "Starts the app: applies the saved language, restores progress, builds the cube, and runs the two-tap Start over button."
+      "description": "Starts the app: applies the saved language, restores progress, builds the cube, runs the two-tap Start over button, and hides a press-and-hold on the brand that fills a random cube for testing."
     },
     "src/ui.js": {
       "name": "Screens and flat turns",

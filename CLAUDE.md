@@ -294,6 +294,12 @@ python3 tests/e2e/screens.py he   # the same walk in Hebrew (no Latin left) or P
 python3 tests/e2e/screenshots.py  # the README's phone screenshots into docs/screenshots (needs the internet for the fonts)
 ```
 
+A hidden helper for testing on a phone, Max's ask on 2026-11-06: press and hold the brand ("Cube Coach"
+top left) for 3 s on a copying screen and the sides fill with a random real cube (scrambled from
+solved with 25 of the cube's own turns, `fillRandom` in `ui.js`, wired in `main.js`), then the check
+begins as if the sides were copied. A tap, a short hold or a scroll does nothing, and nothing happens
+on other screens; Start over undoes it. It is not in the README on purpose.
+
 Verified on 2026-11-04 with Node 26.6, npm 11.18, Python 3.9.6, Playwright 1.60.0. Chromium lives
 in `~/Library/Caches/ms-playwright`. Tests skip the real photos when they are absent and serve
 cubejs from `tests/vendor/cubejs`, so everything runs offline.
@@ -317,7 +323,8 @@ only the layer moves, and it slides off that side the way the arrow points. The 
 front as it is; a turn screen hides the 3D cube and shows the arrow, the After picture (the front
 after the turn) and the layer sliding (the photo cube's first turn: the top row to the right, new
 stickers from the left); the top-of-the-cube tag shows for back turns only; with reduced motion
-nothing slides; the 3D cube is back on the done screen.
+nothing slides; the 3D cube is back on the done screen. Holding the brand on a copying screen fills a
+random cube that solves (both sizes); a short hold, or a hold on the welcome screen, does nothing.
 
 Layout, measured in headless Chromium with realistic entries (page height / viewport height). The
 credits line adds 52 px below every screen (a 24 px gap and the line; 57 px with the web font),
@@ -421,4 +428,5 @@ Built on 2026-10-31 in one Claude chat, in this order:
     layer slides the way the arrow points, beside a small picture of the side after the turn. Max
     picked "slide, with After" from four mockups (slide, now-and-after, slide-with-after, hand) in
     the cmux browser. `src/flat.js` is checked against both cube models in Node; the browser flows
-    check the screens in every language.
+    check the screens in every language. Same day: the hidden press-and-hold on the brand that fills
+    a random cube, for testing.

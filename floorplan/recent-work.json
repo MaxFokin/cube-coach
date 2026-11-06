@@ -52,6 +52,28 @@
           "note": "The README's turn screenshot now shows the flat view."
         }
       ]
+    },
+    {
+      "title": "Hidden random cube",
+      "request": "A hidden cheat only I can do that fills all the cube colors randomly, and feasibly, in one click for easy testing",
+      "summary": "Press and hold the Cube Coach brand for 3 seconds on a copying screen: the sides fill with a random real cube and the check begins. Not mentioned in the README.",
+      "items": [
+        {
+          "ref": "src/main.js",
+          "change": "changed",
+          "note": "Listens for the long press on the brand and calls the filler only on a copying screen; a tap or a short hold does nothing."
+        },
+        {
+          "ref": "src/ui.js",
+          "change": "changed",
+          "note": "Scrambles a solved cube with its own turns, writes its sides into the copied colors and starts the check."
+        },
+        {
+          "ref": "tests/e2e/flows.py",
+          "change": "changed",
+          "note": "Holds the brand on both cube sizes and solves what appears; checks that a short hold and the welcome screen stay as they are."
+        }
+      ]
     }
   ]
 }

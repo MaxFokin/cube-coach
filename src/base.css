@@ -61,7 +61,7 @@ button { font: inherit; color: inherit; }
   min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 }
 .top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; min-height: 52px; gap: 12px; }
-.brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -0.01em; }
+.brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -0.01em; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .logo { width: 28px; height: 28px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #0D0E12; border-radius: 8px; }
 .logo i { border-radius: 3px; }
 .restart {

@@ -502,6 +502,15 @@ function go(screen) {
 function resetAll() {
   Object.assign(app, { side: 0, mode: 'first', entry: empty2(), entry3: empty3(), analysis: null, solution: [], move: 0, flags: [], unsure: [], note: '' });
 }
+// A hidden helper for testing (main.js wires the press-and-hold on the brand): the sides fill with a
+// random real cube, scrambled from solved with the cube's own turns, and the check begins.
+function fillRandom() {
+  const st = randomTurns(25).reduce((s, m) => model.apply(s, m), model.solved);
+  if (is3()) app.entry3 = STEPS3.map((f) => faceCells(st, 3, f));
+  else app.entry = SIDE_ORDERS.left.map((f) => faceCells(st, 2, f));
+  app.unsure = [];
+  finishSides();
+}
 function finishSides() {
   app.flags = [];
   if (is3()) {

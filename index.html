@@ -75,7 +75,7 @@ button { font: inherit; color: inherit; }
   min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 }
 .top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; min-height: 52px; gap: 12px; }
-.brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -0.01em; }
+.brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -0.01em; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .logo { width: 28px; height: 28px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #0D0E12; border-radius: 8px; }
 .logo i { border-radius: 3px; }
 .restart {
@@ -2389,6 +2389,15 @@ function go(screen) {
 function resetAll() {
   Object.assign(app, { side: 0, mode: 'first', entry: empty2(), entry3: empty3(), analysis: null, solution: [], move: 0, flags: [], unsure: [], note: '' });
 }
+// A hidden helper for testing (main.js wires the press-and-hold on the brand): the sides fill with a
+// random real cube, scrambled from solved with the cube's own turns, and the check begins.
+function fillRandom() {
+  const st = randomTurns(25).reduce((s, m) => model.apply(s, m), model.solved);
+  if (is3()) app.entry3 = STEPS3.map((f) => faceCells(st, 3, f));
+  else app.entry = SIDE_ORDERS.left.map((f) => faceCells(st, 2, f));
+  app.unsure = [];
+  finishSides();
+}
 function finishSides() {
   app.flags = [];
   if (is3()) {
@@ -3130,6 +3139,13 @@ restartBtn.addEventListener('click', () => {
 
 themeBtn.addEventListener('click', () => { setTheme(isDark() ? 'light' : 'dark'); paintTheme(); });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintTheme);
+
+// Hidden, for Max's testing: press and hold the brand for 3 s on a copying screen and the sides fill
+// with a random real cube (ui.js fillRandom). A tap, a short hold or a scroll does nothing.
+let holdTimer = null;
+const brandEl = $('.brand');
+brandEl.addEventListener('pointerdown', () => { clearTimeout(holdTimer); holdTimer = setTimeout(() => { if (app.screen === 'side') fillRandom(); }, 3000); });
+for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) brandEl.addEventListener(ev, () => clearTimeout(holdTimer));
 
 let resizeTimer = null;
 window.addEventListener('resize', () => {

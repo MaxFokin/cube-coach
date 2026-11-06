@@ -84,6 +84,36 @@ async def flat_still(browser):
     print('flat view, reduced motion: ok')
     await page.context.close()
 
+# A hidden helper for testing: press and hold the brand on a copying screen for 3 s and the sides
+# fill with a random real cube, then the check begins. A tap or a short hold does nothing.
+async def hold_brand(page, ms):
+    box = await page.evaluate("(() => { const r = document.querySelector('.brand').getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })()")
+    await page.mouse.move(box[0], box[1]); await page.mouse.down(); await page.wait_for_timeout(ms); await page.mouse.up()
+    await page.wait_for_timeout(300)
+
+async def cheat(browser):
+    page, errors = await new_page(browser)
+    await hold_brand(page, 3400)
+    assert await page.query_selector('#pick2'), 'holding the brand on the welcome screen does nothing'
+    await page.tap('#pick2'); await page.wait_for_timeout(200)
+    await hold_brand(page, 1500)
+    assert await page.query_selector('button.cell') and not await page.query_selector('#yes'), 'a short hold does nothing'
+    await hold_brand(page, 3400)
+    assert await page.query_selector('#yes'), 'a long hold fills a random 2x2 and asks about the top'
+    await page.tap('#yes'); await page.tap('#yes'); await page.tap('#ready'); await page.wait_for_timeout(200)
+    moves = await moves_shown(page)
+    assert moves and 'Solved!' in await page.text_content('h1'), 'the random cube is a real cube: it solves'
+    await page.tap('#restart'); await page.tap('#restart'); await page.wait_for_timeout(200)
+    await page.tap('#pick3'); await page.wait_for_timeout(200)
+    await hold_brand(page, 3400)
+    await page.wait_for_selector('#ready', timeout=30000)
+    await page.tap('#ready'); await page.wait_for_timeout(200)
+    moves = await moves_shown(page)
+    assert moves and 'Solved!' in await page.text_content('h1'), 'the random 3x3 is a real cube: it solves'
+    assert not errors, errors
+    print(f'hidden random cube: ok (3x3 in {len(moves)} moves)')
+    await page.context.close()
+
 async def check_credits(page, code):
     assert await page.eval_on_selector_all('.credits a', 'els => els.map((a) => a.href)') == LINKS, 'the credits line links GitHub, LinkedIn and the repo, in that order'
     texts = await page.eval_on_selector_all('.credits a', 'els => els.map((a) => a.textContent.trim())')
@@ -206,6 +236,7 @@ async def main():
         await theme_toggle(browser)
         await locale_pick(browser)
         await flat_still(browser)
+        await cheat(browser)
 
         scr = json.loads((ROOT / 'tests' / 'fixtures' / 'generated' / 'scramble3.json').read_text())
         page, errors = await new_page(browser)
