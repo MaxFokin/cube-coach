@@ -149,7 +149,6 @@ function stopLoops() {
   loopId++;
   clearTurns();
   sceneEl.classList.remove('fade');
-  flatEl.classList.remove('fade');
   delete appEl.dataset.fly;
   flatEl.style.opacity = '';
 }
@@ -222,11 +221,10 @@ async function moveLoop(before, move, fly) {
     if (!(await slideFlat(move, ms)) || !alive()) return;
     flatEl.querySelector('.flat-arrow').classList.add('hide');
     await sleep(1600); if (!alive()) return;
-    flatEl.classList.add('fade');
+    flatEl.querySelector('.flat-side').classList.add('fade');
     await sleep(260); if (!alive()) return;
     clearTurns();
     drawFlat(before, move, after);
-    flatEl.classList.remove('fade');
     await sleep(320);
   }
 }

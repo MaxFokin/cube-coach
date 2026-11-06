@@ -110,6 +110,10 @@ async def fly_cut(browser):
     await page.tap('#did'); await page.wait_for_timeout(300)
     assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'I did it mid-fly lands on the next turn with the flat side'
     assert await page.evaluate("getComputedStyle(document.querySelector('.flat')).opacity") == '1' and await page.query_selector('.flat-strip')
+    # At the end of a cycle only the big side fades out before it shows again; the After picture stays.
+    await page.wait_for_function("document.querySelector('.flat-side.fade') !== null", timeout=9000)  # the class lives 260 ms; a selector wait misses it
+    assert await page.evaluate("getComputedStyle(document.querySelector('.flat-after')).opacity") == '1', 'the After picture stays while the side resets'
+    assert await page.evaluate("getComputedStyle(document.querySelector('.flat')).opacity") == '1'
     await page.tap('#back'); await page.wait_for_timeout(150)
     assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'back to the first turn: no fly'
     await page.tap('#back'); await page.wait_for_timeout(150)

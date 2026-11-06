@@ -230,7 +230,8 @@ and the `.flat-after` picture (the side after the turn, labelled `after`). The m
 are, then after each quarter turn, so the new stickers come in from the other end; for a down or right
 slide the strip is laid out the other way round and starts shifted. `moveLoop`: arrow 1.2 s, slide
 1.5 s (2.3 s for a double turn, which travels two layers; a front turn rotates the whole grid instead),
-the result held 1.6 s with the arrow hidden, a fade, and again. With reduced motion nothing slides;
+the result held 1.6 s with the arrow hidden, then the side fades and starts again while the After
+picture stays put (a bug Max saw on 2026-11-06: the whole stage used to fade). With reduced motion nothing slides;
 the After picture says it. The stage keeps its height (`--stage` in `base.css`); the side is
 `min(64vw, stage - 22px)`: 211 px at 375x667, 250 px at 390x844, 202 px at 360x640, the After
 picture 92 px.
@@ -333,8 +334,8 @@ every language. The flat view's table matches both cube models for all 27 moves:
 only the layer moves, and it slides off that side the way the arrow points. A turn screen hides the
 3D cube and shows the arrow, the After picture (the front
 after the turn) and the layer sliding (the photo cube's first turn: the top row to the right, new
-stickers from the left); the top-of-the-cube tag shows for back turns only; with reduced motion
-nothing slides; the 3D cube is back on the done screen. The hold screen shows the 3D cube; I'm ready
+stickers from the left); the top-of-the-cube tag shows for back turns only; the After picture stays
+while the side resets; with reduced motion nothing slides; the 3D cube is back on the done screen. The hold screen shows the 3D cube; I'm ready
 flies it into the flat side (`data-fly` for about 3.7 s, then the side alone); I did it mid-fly lands
 on the next turn at once, back from a turn shows no fly, back on the hold screen the 3D cube is there
 again, and reduced motion skips the fly. Holding the brand on a copying screen fills a
