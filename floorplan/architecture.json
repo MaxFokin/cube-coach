@@ -27,10 +27,11 @@
       "parent": "app",
       "label": "Cube brains",
       "kind": "library",
-      "summary": "Knows what a real cube looks like: checks a copied cube, repairs a side copied the wrong way round, points at a wrong square, and solves the 2x2 itself.",
+      "summary": "Knows what a real cube looks like: checks a copied cube, repairs a side copied the wrong way round, points at a wrong square, and solves the 2x2 itself, and the flat turn table that says which side and layer a turn shows.",
       "paths": [
         "src/core2.js",
-        "src/core3.js"
+        "src/core3.js",
+        "src/flat.js"
       ]
     },
     {
@@ -56,9 +57,9 @@
     {
       "id": "app.screens",
       "parent": "app",
-      "label": "Screens, 3D cube and camera",
+      "label": "Screens, flat turns and camera",
       "kind": "feature",
-      "summary": "Draws every screen, animates the 3D cube and its arrows, runs the camera sheet, saves progress on the phone and starts the app.",
+      "summary": "Draws every screen, shows each turn flat with its sliding layer and arrow, spins the 3D cube on the start and check screens, runs the camera sheet, saves progress on the phone and starts the app.",
       "paths": [
         "src/ui.js",
         "src/camera.js",
@@ -236,7 +237,7 @@
         },
         {
           "node": "app.screens",
-          "note": "Shows the deduced top and bottom to confirm, then one animated turn at a time until the confetti."
+          "note": "Shows the deduced top and bottom to confirm, then one turn at a time, flat with its arrow and the side after it, until the confetti."
         }
       ]
     },
@@ -259,7 +260,7 @@
         },
         {
           "node": "app.screens",
-          "note": "Shows the moves with arrows, including turns of the back layer on the top face."
+          "note": "Shows each turn flat with an arrow and the side after it; a turn of the back layer shows the top of the cube."
         }
       ]
     },
@@ -331,8 +332,8 @@
     },
     {
       "node": "app.screens",
-      "title": "Screens and the 3D cube",
-      "note": "The screens, the animated cube with its arrows, and the camera sheet. Progress is saved on the phone, so a reload lands on the same move."
+      "title": "Screens and the flat turns",
+      "note": "The screens, each turn shown flat with its sliding layer and arrow, the 3D cube on the start screen, and the camera sheet. Progress is saved on the phone, so a reload lands on the same move."
     },
     {
       "node": "page",

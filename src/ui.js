@@ -11,7 +11,7 @@ const SOLVER_URLS = [
 ];
 
 const $ = (sel) => document.querySelector(sel);
-const appEl = $('#app'), sceneEl = $('#scene'), spinnerEl = $('#spinner'), cubeEl = $('#cube'), panelEl = $('#panel'), restartBtn = $('#restart');
+const appEl = $('#app'), sceneEl = $('#scene'), spinnerEl = $('#spinner'), cubeEl = $('#cube'), flatEl = $('#flat'), panelEl = $('#panel'), restartBtn = $('#restart');
 
 const empty2 = () => [0, 1, 2, 3].map(() => [null, null, null, null]);
 const empty3 = () => STEPS3.map((face) => Array.from({ length: 9 }, (_, i) => (i === 4 ? CENTER3[face] : null)));
@@ -35,7 +35,7 @@ const MODEL = {
 };
 let model = MODEL[2];
 
-let S = 60, unit = 30, H = 60, cubies = [], arrowFront = null, arrowTop = null, shown = [];
+let S = 60, unit = 30, H = 60, cubies = [], shown = [];
 const FACE_TF = { px: 'rotateY(90deg)', nx: 'rotateY(-90deg)', py: 'rotateX(90deg)', ny: 'rotateX(-90deg)', pz: 'rotateY(0deg)', nz: 'rotateY(180deg)' };
 const computeS = () => Math.round(Math.max(44, Math.min(window.innerWidth * 0.15, window.innerHeight * 0.07, 74)));
 const cubieTf = (ci) => { const p = model.positions[ci]; return `translate3d(${p[0] * unit}px, ${-p[1] * unit}px, ${p[2] * unit}px)`; };
@@ -71,16 +71,6 @@ function buildCube() {
     cubeEl.appendChild(el);
     return el;
   });
-  const plane = (tf) => {
-    const a = make('arrow hide');
-    a.style.width = a.style.height = (2 * H) + 'px';
-    a.style.left = a.style.top = (-H) + 'px';
-    a.style.transform = tf;
-    cubeEl.appendChild(a);
-    return a;
-  };
-  arrowFront = plane(`translateZ(${H + 3}px)`);
-  arrowTop = plane(`rotateX(90deg) translateZ(${H + 3}px)`);
   paint(shown.length === model.size ? shown : new Array(model.size).fill(null));
 }
 function useModel(n) {
@@ -133,6 +123,7 @@ function setOrientThen(first, second, still) {
 }
 
 const TURN = { R: [[1, 0, 0], 90], L: [[1, 0, 0], -90], U: [[0, 1, 0], -90], D: [[0, 1, 0], 90], F: [[0, 0, 1], 90], B: [[0, 0, 1], -90] };
+const EASE = 'cubic-bezier(.45, .05, .3, 1)';
 let live = [];
 function turn(move, ms) {
   const [axis, base] = TURN[move[0]];
@@ -145,7 +136,7 @@ function turn(move, ms) {
     anims.push(el.animate([
       { transform: `rotate3d(${axis}, 0deg) ${b}` },
       { transform: `rotate3d(${axis}, ${base * amount}deg) ${b}` },
-    ], { duration: ms, easing: 'cubic-bezier(.45, .05, .3, 1)', fill: 'forwards' }));
+    ], { duration: ms, easing: EASE, fill: 'forwards' }));
   });
   live.push(...anims);
   return anims;
@@ -154,36 +145,85 @@ function clearTurns() { live.forEach((a) => a.cancel()); live = []; }
 
 let loopId = 0;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-function showArrow(on) { [arrowFront, arrowTop].forEach((a) => a && a.classList.toggle('hide', !on)); }
 function stopLoops() {
   loopId++;
   clearTurns();
   sceneEl.classList.remove('fade');
-  showArrow(false);
+  flatEl.classList.remove('fade');
 }
 async function playTurn(move, ms, alive) {
   const anims = turn(move, ms);
   try { await Promise.all(anims.map((a) => a.finished)); } catch (e) { return false; }
   return alive();
 }
+
+// ===== The flat view: on the hold and turn screens, one side of the cube flat (flat.js says which) =====
+const flatCell = (c, style = '') => `<i class="flat-cell" style="--c:${HEX[c]}${style}"></i>`;
+// For a down or right slide the strip is laid out after-then-before and starts shifted, so the side shows as it is.
+const reversed = (turn) => turn.dir === 'down' || turn.dir === 'right';
+function flatGrid(state, move, face = 'F') {
+  const N = model.N, turn = move && flatTurn(move, N), cells = faceCells(state, N, turn ? turn.face : face);
+  const slides = !!turn && turn.kind !== 'face';
+  const layer = slides ? layerCells(cells.map((_, i) => i), N, turn) : [];
+  let inner = '';
+  for (let i = 0; i < N * N; i++) if (!layer.includes(i)) inner += flatCell(cells[i], `; grid-area: ${Math.floor(i / N) + 1} / ${(i % N) + 1}`);
+  if (slides) {
+    // The strip: the layer as it is, then after each quarter turn, in the order it slides past the window.
+    const states = [state];
+    for (let k = 0; k < (turn.twice ? 2 : 1); k++) states.push(model.apply(states[k], turn.twice ? move[0] : move));
+    const strip = (reversed(turn) ? states.reverse() : states).flatMap((s) => layerCells(faceCells(s, N, turn.face), N, turn)).map((c) => flatCell(c)).join('');
+    inner += `<div class="flat-win ${turn.kind === 'col' ? 'v' : 'h'}" style="${turn.kind === 'col' ? 'grid-column' : 'grid-row'}: ${turn.index + 1}"><div class="flat-strip">${strip}</div></div>`;
+  }
+  return `<div class="flat-grid n${N}">${inner}</div>`;
+}
+// How far the strip travels: the layer's length and one gap, per quarter turn.
+function stripTravel(turn) {
+  const strip = flatEl.querySelector('.flat-strip');
+  if (!strip) return [null, 0];
+  const win = strip.parentElement, gap = parseFloat(getComputedStyle(strip).gap) || 0;
+  return [strip, ((turn.kind === 'col' ? win.offsetHeight : win.offsetWidth) + gap) * (turn.twice ? 2 : 1)];
+}
+const shifted = (turn, px) => `translate${turn.kind === 'col' ? 'Y' : 'X'}(${px}px)`;
+// The side as it is with the arrow on the moving layer, and a small picture of the side after the turn.
+function drawFlat(before, move, after) {
+  if (!move) { flatEl.innerHTML = `<div class="flat-side">${flatGrid(before)}</div>`; return; }
+  const turn = flatTurn(move, model.N);
+  flatEl.innerHTML = `<div class="flat-side">${flatGrid(before, move)}<div class="flat-arrow">${arrowSVG(move, model.N, false)}</div>` +
+    `${turn.face === 'U' ? `<span class="flat-tag">${t('topTag')}</span>` : ''}</div>` +
+    `<figure class="flat-after"><figcaption>${t('after')}</figcaption>${flatGrid(after, null, turn.face)}</figure>`;
+  const [strip, travel] = stripTravel(turn);
+  if (strip && reversed(turn)) strip.style.transform = shifted(turn, -travel);
+}
+function slideFlat(move, ms) {
+  const turn = flatTurn(move, model.N), timing = { duration: ms, easing: EASE, fill: 'forwards' };
+  let anim;
+  if (turn.kind === 'face') {
+    const deg = (turn.twice ? 180 : 90) * (turn.dir === 'cw' ? 1 : -1);
+    anim = flatEl.querySelector('.flat-grid').animate([{ transform: 'rotate(0deg)' }, { transform: `rotate(${deg}deg)` }], timing);
+  } else {
+    const [strip, travel] = stripTravel(turn), back = reversed(turn);
+    anim = strip.animate([{ transform: shifted(turn, back ? -travel : 0) }, { transform: shifted(turn, back ? 0 : -travel) }], timing);
+  }
+  live.push(anim);
+  return anim.finished.then(() => true, () => false);
+}
 async function moveLoop(before, move) {
   const id = ++loopId;
   const alive = () => id === loopId;
   const after = model.apply(before, move);
   const ms = move[1] === '2' ? 2300 : 1500;
-  paint(before);
-  drawArrow(move);
+  drawFlat(before, move, after);
+  if (reduced) return;
   while (alive()) {
-    showArrow(true);
-    await sleep(1400); if (!alive()) return;
-    showArrow(false);
-    if (!(await playTurn(move, ms, alive))) return;
-    paint(after); clearTurns();
+    await sleep(1200); if (!alive()) return;
+    if (!(await slideFlat(move, ms)) || !alive()) return;
+    flatEl.querySelector('.flat-arrow').classList.add('hide');
     await sleep(1600); if (!alive()) return;
-    sceneEl.classList.add('fade');
+    flatEl.classList.add('fade');
     await sleep(260); if (!alive()) return;
-    paint(before);
-    sceneEl.classList.remove('fade');
+    clearTurns();
+    drawFlat(before, move, after);
+    flatEl.classList.remove('fade');
     await sleep(320);
   }
 }
@@ -220,7 +260,7 @@ async function demoLoop() {
   }
 }
 
-// ===== Turn arrows (drawn on the front face, or on the top face for back turns) =====
+// ===== Turn arrows: on the flat side (the front, or the top for back turns) and in the move icon =====
 function arrowParts(move, N) {
   const f = move[0];
   const kind = move.length === 1 ? 1 : move[1] === '2' ? 2 : -1;
@@ -273,11 +313,6 @@ function arrowSVG(move, N, withFace) {
     `<path d="${a.shaft}" class="a-core"/><polygon points="${a.tip}" class="a-core-h"/>` +
     (a.twice ? '<circle cx="100" cy="100" r="26" class="a-badge"/><text x="100" y="110" text-anchor="middle" class="a-badge-t">2×</text>' : '') +
     '</svg>';
-}
-function drawArrow(move) {
-  const top = arrowParts(move, model.N).plane === 'top';
-  arrowFront.innerHTML = top ? '' : arrowSVG(move, model.N, false);
-  arrowTop.innerHTML = top ? arrowSVG(move, model.N, false) : '';
 }
 
 // ===== The 3x3 solver loads only when someone picks a 3x3 =====
@@ -757,9 +792,8 @@ function screenSolverError(animate) {
   on('retry', () => go('solving'));
 }
 
-function screenHold(animate) {
-  paint(app.analysis.state);
-  setOrient(view('solve'), animate);
+function screenHold() {
+  drawFlat(app.analysis.state);
   const note = app.note ? `<p class="note">${app.note}</p>` : '';
   if (!app.solution.length) {
     panelEl.innerHTML = `
@@ -777,10 +811,9 @@ function screenHold(animate) {
   on('ready', () => { app.move = 0; go('move'); });
 }
 
-function screenMove(animate) {
+function screenMove() {
   const i = app.move, sol = app.solution, m = sol[i];
   const [title, sub] = moveText(m);
-  setOrient(view('solve'), animate);
   moveLoop(stateAt(i), m);
   panelEl.innerHTML = `
     ${progress(sol.length, i, t('moveOf', { n: i + 1, total: sol.length }), `<span class="key" aria-label="${t('cubeCode', { m })}">${m.replace("'", '′')}</span>`)}

@@ -23,6 +23,10 @@
     "tests/strings.test.js": {
       "name": "Words tests",
       "description": "Checks every sentence exists in every language with matching placeholders, well-formed plural and color sets, and no shouting or em dashes."
+    },
+    "tests/flat.test.js": {
+      "name": "Flat turn tests",
+      "description": "Checks the flat turn table against both cube models for all 27 turns: on the shown side only the named layer moves, it slides off the way the arrow points, and a front turn rotates the front a quarter."
     }
   }
 }

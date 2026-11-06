@@ -626,6 +626,16 @@ const STRINGS = {
     he: 'עשיתי',
     pl: 'Zrobione',
   },
+  after: {
+    en: 'After',
+    he: 'אחרי',
+    pl: 'Potem',
+  },
+  topTag: {
+    en: 'Top of the cube',
+    he: 'החלק העליון של הקובייה',
+    pl: 'Góra kostki',
+  },
   lost: {
     en: 'My cube looks different',
     he: 'הקובייה שלי נראית אחרת',

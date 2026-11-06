@@ -7,6 +7,10 @@
     "src/core3.js": {
       "name": "3x3 cube brain",
       "description": "Checks a copied 3x3 is a real cube, repairs a side copied the wrong way round, points at a wrong square, and prepares the cube for the solver."
+    },
+    "src/flat.js": {
+      "name": "Flat turn table",
+      "description": "Says which side a turn is shown on (the front, or the top for a back-layer turn), which row or column slides and which way, and lists a side's stickers as the child sees them."
     }
   }
 }

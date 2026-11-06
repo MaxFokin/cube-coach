@@ -1,77 +1,55 @@
 {
-  "updatedAt": "2026-11-04T20:30:00Z",
+  "updatedAt": "2026-11-06T14:00:00Z",
   "tasks": [
     {
-      "title": "Credits line, dark mode, header",
-      "request": "A permanent footer with my GitHub, LinkedIn and the repo; a light/dark switch at the top right with the language options next to it; the same look in Hebrew",
-      "summary": "A quiet credits line under every screen, a moon/sun toggle and the language switch together at the top right, with Start over leaving the welcome header. Picked from four mockups and live on 2026-11-04.",
+      "title": "Turns shown flat",
+      "request": "My 6-year-old has a hard time following the 3D cube animations; create some options for a 2D, one-side view for the solution part",
+      "summary": "Four mockups in the cmux browser; Max picked \"slide, with After\". The hold and turn screens now show one side of the cube flat: the moving layer slides the way the arrow points, with a small picture of the side after the turn. The 3D cube stays on the start, check and done screens. Built on branch flat on 2026-11-06, not pushed yet.",
       "items": [
         {
-          "ref": "src/page.template.html",
-          "change": "changed",
-          "note": "Carries the header's right-hand group and the credits line, and applies a saved theme before the first paint so the page never flashes the wrong colors."
+          "ref": "src/flat.js",
+          "change": "new",
+          "note": "The table behind the flat view: which side a turn is shown on, which row or column slides and which way. Checked against both cube models."
         },
         {
           "ref": "src/ui.js",
           "change": "changed",
-          "note": "Switches and saves the theme, paints the moon or sun, and refreshes the toggle label with the language on every screen change."
+          "note": "Draws the flat side with the arrow and the After picture, slides the moving layer (or rotates the side for a front turn), and no longer animates the 3D cube on the turn screens."
         },
         {
           "ref": "src/extra.css",
           "change": "changed",
-          "note": "The header's tools group, the round toggle and the credits line, pinned left-to-right and to one font so Hebrew looks the same."
+          "note": "The look of the flat side, its sliding layer window, the arrow overlay, the After picture and the top-of-the-cube tag."
         },
         {
           "ref": "src/base.css",
           "change": "changed",
-          "note": "The page fills the phone so the credits line can sit at the bottom; Start over leaves the welcome header instead of hiding in place."
+          "note": "The stage height became a variable the flat side sizes itself from; the old 3D arrow planes' styles are gone."
+        },
+        {
+          "ref": "src/page.template.html",
+          "change": "changed",
+          "note": "The stage holds the flat view's box next to the 3D scene."
         },
         {
           "ref": "src/strings.js",
           "change": "changed",
-          "note": "Two new words in every language: Dark mode, Light mode. The credits line is not translated."
+          "note": "Two new words in every language: After, and Top of the cube for back-layer turns."
         },
         {
-          "ref": "src/main.js",
-          "change": "changed",
-          "note": "Wires the toggle and keeps its icon in step with the phone's setting."
+          "ref": "tests/flat.test.js",
+          "change": "new",
+          "note": "Proves the table right for all 27 turns of both cubes: only the layer moves on the shown side and it slides off the way the arrow points."
         },
         {
           "ref": "tests/e2e/flows.py",
           "change": "changed",
-          "note": "Checks the header group, the toggle (reload, Start over, no storage, a dark phone) and the credits line in every language."
-        },
-        {
-          "ref": "tests/e2e/screens.py",
-          "change": "changed",
-          "note": "Allows every screen the credits line's height and checks the line is there."
+          "note": "Every language's solve now checks the hold screen, the arrow, the sliding layer, the After picture, reduced motion and the back-turn tag."
         },
         {
           "ref": "tests/e2e/screenshots.py",
-          "change": "new",
-          "note": "Takes the three phone screenshots the new README shows."
-        }
-      ]
-    },
-    {
-      "title": "Language from the phone",
-      "request": "Set the app language by the browser locale",
-      "summary": "With nothing saved the app opens in the phone's language when it is Hebrew or Polish, else English, and keeps following the phone until the switch is tapped.",
-      "items": [
-        {
-          "ref": "src/ui.js",
           "change": "changed",
-          "note": "Reads the phone's language list and applies a language without saving it; only the switch saves."
-        },
-        {
-          "ref": "src/main.js",
-          "change": "changed",
-          "note": "Starts from the saved choice, else the phone's language."
-        },
-        {
-          "ref": "tests/e2e/flows.py",
-          "change": "changed",
-          "note": "Opens the app as a Hebrew, Polish, German and British phone and checks the language, that nothing is saved, and that a tap wins."
+          "note": "The README's turn screenshot now shows the flat view."
         }
       ]
     }

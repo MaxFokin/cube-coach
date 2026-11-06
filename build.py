@@ -7,7 +7,7 @@
 import sys, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC = ROOT / "src"
-JS_ORDER = ["core2.js", "core3.js", "colorread.js", "strings.js", "ui.js", "camera.js", "main.js"]
+JS_ORDER = ["core2.js", "core3.js", "flat.js", "colorread.js", "strings.js", "ui.js", "camera.js", "main.js"]
 CSS_ORDER = ["base.css", "extra.css"]
 
 def build() -> str:

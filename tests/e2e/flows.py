@@ -34,12 +34,55 @@ async def moves_shown(page):
     moves = []
     for _ in range(40):
         moves.append((await page.text_content('.key')).replace('′', "'"))
+        assert bool(await page.query_selector('.flat-tag')) == moves[-1].startswith('B'), f'the top-of-the-cube tag shows for back turns only: {moves[-1]}'
+        assert await page.is_visible('.flat-after .flat-grid'), f'the After picture is on every turn: {moves[-1]}'
         await page.tap('#did'); await page.wait_for_timeout(80)
         if await page.query_selector('#another'): break
     return moves
 
 async def direction(page, sel):
     return await page.evaluate(f"getComputedStyle(document.querySelector('{sel}')).direction")
+
+RGB = {'rgb(246, 246, 241)': 'W', 'rgb(255, 212, 59)': 'Y', 'rgb(215, 38, 61)': 'R', 'rgb(255, 138, 30)': 'O', 'rgb(31, 111, 235)': 'B', 'rgb(31, 173, 92)': 'G'}
+async def flat_cells(page, sel):
+    return ''.join(RGB[c] for c in await page.eval_on_selector_all(f'{sel} .flat-cell', 'els => els.map((e) => getComputedStyle(e).backgroundColor)'))
+
+async def strip_x(page):
+    return await page.evaluate("new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.flat-strip')).transform).m41")
+
+# The hold screen shows the front flat; a turn screen shows it with the arrow on the moving layer,
+# the layer sliding, and a small picture of the front after the turn. The first turn of the photo
+# cube is U': the top row slides to the right, and the new stickers come in from the left.
+async def check_flat(page, code, hold=False):
+    assert await page.is_visible('.flat .flat-grid'), 'the side is shown flat'
+    assert not await page.is_visible('#scene'), 'the 3D cube is away'
+    assert await direction(page, '.flat') == 'ltr', 'the flat side never mirrors'
+    if hold:
+        assert await flat_cells(page, '.flat') == 'WGYO', 'the hold screen shows the front as it is'
+        assert not await page.query_selector('.flat-arrow') and not await page.query_selector('.flat-after'), 'no arrow and no After picture before the first turn'
+        return
+    assert await page.query_selector('.flat-arrow svg'), 'the arrow sits on the flat side'
+    label = (await page.text_content('.flat-after figcaption')).strip()
+    if code == 'en': assert label == 'After', label
+    elif code == 'he': assert not re.search(r'[A-Za-z]', label), label
+    else: assert label != 'After', label
+    assert await flat_cells(page, '.flat-after') == 'ORYO', 'the After picture is the front after the turn'
+    x0 = await strip_x(page)
+    assert x0 < 0, f'a slide to the right starts with the new stickers hidden on the left: {x0}'
+    await page.wait_for_timeout(2000)
+    assert await strip_x(page) > x0, 'the top row slides to the right'
+
+async def flat_still(browser):
+    page, errors = await new_page(browser, reduced_motion='reduce')
+    await page.tap('#pick2'); await page.wait_for_timeout(200)
+    await paint(page, MAX)
+    await page.tap('#yes'); await page.tap('#yes'); await page.tap('#ready'); await page.wait_for_timeout(200)
+    x0 = await strip_x(page); await page.wait_for_timeout(2600)
+    assert await strip_x(page) == x0, 'with reduced motion nothing slides; the After picture tells'
+    assert await page.is_visible('.flat-after .flat-grid') and await page.query_selector('.flat-arrow svg')
+    assert not errors, errors
+    print('flat view, reduced motion: ok')
+    await page.context.close()
 
 async def check_credits(page, code):
     assert await page.eval_on_selector_all('.credits a', 'els => els.map((a) => a.href)') == LINKS, 'the credits line links GitHub, LinkedIn and the repo, in that order'
@@ -74,13 +117,17 @@ async def flow2(browser, code):
     await page.reload(); await page.wait_for_timeout(300)  # a reload must land on the same screen, same language
     assert await page.get_attribute('html', 'lang') == code
     if code == 'en': assert 'bottom' in await page.text_content('h1'), await page.text_content('h1')
-    await page.tap('#yes'); await page.tap('#ready'); await page.wait_for_timeout(200)
+    await page.tap('#yes'); await page.wait_for_timeout(100)
+    await check_flat(page, code, hold=True)
+    await page.tap('#ready'); await page.wait_for_timeout(200)
     for sel in ('.key', '.stage', '.move-icon'):
         assert await direction(page, sel) == 'ltr', sel
+    await check_flat(page, code)
     await page.reload(); await page.wait_for_timeout(300)
     assert await page.get_attribute('html', 'lang') == code and await page.query_selector('#did')
     got = ' '.join(await moves_shown(page))
     assert got == MAX_SOLUTION, got
+    assert await page.is_visible('#scene'), 'the 3D cube is back on the done screen'
     await page.tap('#restart'); await page.tap('#restart'); await page.wait_for_timeout(200)  # resets the game, keeps the language
     assert await page.get_attribute('.lang[aria-pressed="true"]', 'data-lang') == code
     assert not errors, errors
@@ -158,6 +205,7 @@ async def main():
         await blocked_storage(browser)
         await theme_toggle(browser)
         await locale_pick(browser)
+        await flat_still(browser)
 
         scr = json.loads((ROOT / 'tests' / 'fixtures' / 'generated' / 'scramble3.json').read_text())
         page, errors = await new_page(browser)

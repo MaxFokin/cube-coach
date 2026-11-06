@@ -2,13 +2,14 @@
 
 Cube Coach is a one-file web app that walks a child through solving a 2x2 or 3x3 Rubik's cube. The
 child copies the cube's colors (by tapping or with the camera), the app checks that the copy is a real
-cube, works out a short solution, and shows every turn on an animated 3D cube with an arrow.
+cube, works out a short solution, and shows every turn flat, on the side the child is looking at:
+the layer slides the way the arrow points, beside a small picture of the side after the turn.
 It speaks English, Hebrew and Polish, opening in the phone's language, with a switch top right on the
 welcome screen beside a light/dark toggle; a credits line (GitHub, LinkedIn, the repo) closes every screen.
 Max (GitHub `MaxFokin`) built it for Max's son in a Claude chat on 2026-10-31. On 2026-11-04 Claude
 Code reviewed every file, fixed what was found, and published it to GitHub Pages.
 
-This file is the project's memory. Everything in it is current and was verified on 2026-11-04.
+This file is the project's memory. Everything in it is current and was verified on 2026-11-06.
 When a fact here changes, change it here in the same commit.
 
 Live: https://maxfokin.github.io/cube-coach/
@@ -17,7 +18,7 @@ Live: https://maxfokin.github.io/cube-coach/
 
 1. `git pull`, then `python3 build.py --check` (must say index.html is up to date) and `npm test`
    (three Node tests must pass; run `npm install` first if `node_modules` is missing).
-2. If the work touches `ui.js`, `camera.js`, `strings.js`, the template or the CSS, also run the browser tests
+2. If the work touches `ui.js`, `flat.js`, `camera.js`, `strings.js`, the template or the CSS, also run the browser tests
    and the screen walks (see Testing).
 3. Report what passed, then ask Max what to work on. Don't change behavior, copy or design on your own.
 
@@ -42,16 +43,20 @@ Live: https://maxfokin.github.io/cube-coach/
   - `page.template.html` - head and body skeleton with `{{CSS}}` and `{{JS}}` placeholders, the one-line
     saved-theme script in the head, the header (brand, Start over, theme toggle) and the credits line.
   - `base.css` - tokens (light and dark), layout, stage, grids, palette, buttons, confetti, breakpoints.
-  - `extra.css` - cube choice tiles, header tools (language switch, theme toggle), credits line, 3x3 grids,
+  - `extra.css` - cube choice tiles, header tools (language switch, theme toggle), credits line, the flat
+    view, 3x3 grids,
     green edge bars, thinking spinner, camera sheet.
   - `core2.js` - 2x2 model: stickers, moves, deduction of the whole cube from 4 sides, validation,
     optimal solver. Also `cross` and `dot`, used by `core3.js` too.
   - `core3.js` - 3x3 model: Kociemba facelet order, all 18 moves, validation (pieces, twist, flip,
     parity), turned-side and single-square fix search, cubejs facelet string.
+  - `flat.js` - the flat view's logic: which side a turn is shown on (the front, or the top for a back
+    turn), which row or column moves and which way, and a side's stickers row by row. No DOM.
   - `colorread.js` - reads sticker colors from pixels (camera or photo) and finds the cube in a photo.
   - `strings.js` - every word a person reads, in English, Hebrew and Polish, plus `t()`, `moveText()`,
     `LANGS` and the current language. No DOM in this file.
-  - `ui.js` - app state, language and theme, 3D stage (CSS 3D), turn animations, arrows, saving, every screen.
+  - `ui.js` - app state, language and theme, the 3D stage (CSS 3D), the flat view of a turn with its
+    sliding layer, arrows, saving, every screen.
   - `camera.js` - the camera sheet: live camera, photo fallback with drag and pinch, live color dots.
   - `main.js` - start-up: restore, build the stage, render; Start over and theme buttons; resize handling.
 - `build.py` - `python3 build.py` writes `index.html`; `--check` exits 1 if it is stale. Reads and
@@ -132,7 +137,8 @@ moved the switch next to the toggle the same day.
 
 Hebrew sets `dir="rtl"`; text, headings, buttons and the camera sheet follow. The header never
 mirrors (`.top` is pinned left-to-right), so the brand stays top-left and the tools top-right.
-Everything that shows the physical cube is pinned to `direction: ltr` in `base.css`: `.stage`,
+Everything that shows the physical cube is pinned to `direction: ltr` in `base.css`: `.stage` (the
+flat view inside it inherits),
 `.face-grid`, `.grid-row`, `.cam-view`, `.cam-guide`, `.move-icon`, `.chips`, `.bar`, `.palette`,
 `.key` (also `unicode-bidi: isolate`, so `U′` never renders as `′U`) and `.langs`; the credits line
 is pinned too (`.credits`, see below). Fredoka already carries
@@ -192,15 +198,41 @@ sticker. Orientation of the whole cube is `rotateX(vx) rotateY(vy) rotateX(ax) r
 the previous side stays visible), `top`, `bottom`, `solve`.
 
 Turn animation (`turn`): the layer's cubies get a Web Animations rotate3d, then the state is
-repainted and the animations cancelled, so slots never move. CSS mapping of a clockwise face turn:
-R = rotateX(+90), L = rotateX(-90), U = rotateY(-90), D = rotateY(+90), F = rotateZ(+90),
-B = rotateZ(-90). Timings in `moveLoop`: arrow shown 1.4 s, quarter turn 1.5 s, half turn 2.3 s,
-result held 1.6 s. Arrows are SVG on two planes: the front face for R L U D F, the top face for B
-(its back row).
+repainted and the animations cancelled, so slots never move. Since 2026-11-06 only the welcome demo
+turns the 3D cube; the hold and turn screens show the flat view (next section). CSS mapping of a
+clockwise face turn: R = rotateX(+90), L = rotateX(-90), U = rotateY(-90), D = rotateY(+90),
+F = rotateZ(+90), B = rotateZ(-90).
 
 Never put `opacity` or `filter` on `.cube`, `.spinner` or `.cubie`: it flattens the 3D (fade the
 `.scene` instead). Never put `overflow` other than `visible` or `clip` on an ancestor with
 `transform-style: preserve-3d` (`clip` is fine and is what `.stage` and `body` use).
+
+### The flat view (hold and turn screens)
+
+Max's six-year-old could not follow the 3D turns, so since 2026-11-06 the `hold` and `move` screens
+show one side of the cube flat (`#flat` inside the stage; CSS hides `.scene` and `.floor` on those two
+screens, and the 3D cube is back on `done`). Max picked "slide, with After" from four mockups (slide,
+now-and-after, slide-with-after, a pushing hand) in the cmux browser.
+
+`flatTurn(move, N)` in `flat.js` says what to show: the face (`F` for every turn but the back
+layer's, which shows `U` with its back row and the `topTag` pill, as the old arrow did), the kind
+(`col`, `row` or `face`), the index of the moving row or column, the direction (`up`, `down`,
+`left`, `right`, `cw`, `ccw`) and `twice`. `faceCells(state, N, face)` gives a side's stickers row by
+row as the child sees it, `layerCells` the cells along the moving layer. `tests/flat.test.js` checks
+the table against both cube models' permutations: on the shown side only the layer's stickers move,
+the layer slides off that side the way the arrow points, and a front turn rotates the front a quarter.
+
+`drawFlat(before, move, after)` in `ui.js` builds the side as `.flat-grid` (the same look as the
+copying grids, `.flat-cell` per sticker), the arrow (`arrowSVG`, shared with the move icon) over it,
+and the `.flat-after` picture (the side after the turn, labelled `after`). The moving layer is a
+`.flat-win` window over its row or column with a `.flat-strip` inside: the layer's stickers as they
+are, then after each quarter turn, so the new stickers come in from the other end; for a down or right
+slide the strip is laid out the other way round and starts shifted. `moveLoop`: arrow 1.2 s, slide
+1.5 s (2.3 s for a double turn, which travels two layers; a front turn rotates the whole grid instead),
+the result held 1.6 s with the arrow hidden, a fade, and again. With reduced motion nothing slides;
+the After picture says it. The stage keeps its height (`--stage` in `base.css`); the side is
+`min(64vw, stage - 22px)`: 211 px at 375x667, 250 px at 390x844, 202 px at 360x640, the After
+picture 92 px. The hold screen shows the front alone, so the child can match the real cube first.
 
 ### 3x3 solver
 
@@ -252,7 +284,7 @@ where each key shows its three languages together.
 
 ```
 npm install                       # cubejs 1.3.2 and sharp 0.34.5, for tests only
-npm test                          # Node: strings, core2, core3 (cross-checked against cubejs), colorread
+npm test                          # Node: strings, core2, core3 (cross-checked against cubejs), flat, colorread
 python3 build.py --check          # index.html matches src/
 python3 -m venv .venv && .venv/bin/pip install playwright && .venv/bin/playwright install chromium
 node tests/e2e/fixtures.js        # random 3x3 scramble, synthetic side, fake camera clip
@@ -280,7 +312,12 @@ English, nothing is saved until a tap, and a tapped choice beats the phone; the 
 toggle share the header's right group and Start over is gone from the welcome header; the toggle
 flips `data-theme`, survives a reload and Start over, and follows the phone until tapped; the
 credits line is on every screen with the same three links, words, order, font and direction in
-every language.
+every language. The flat view's table matches both cube models for all 27 moves: on the shown side
+only the layer moves, and it slides off that side the way the arrow points. The hold screen shows the
+front as it is; a turn screen hides the 3D cube and shows the arrow, the After picture (the front
+after the turn) and the layer sliding (the photo cube's first turn: the top row to the right, new
+stickers from the left); the top-of-the-cube tag shows for back turns only; with reduced motion
+nothing slides; the 3D cube is back on the done screen.
 
 Layout, measured in headless Chromium with realistic entries (page height / viewport height). The
 credits line adds 52 px below every screen (a 24 px gap and the line; 57 px with the web font),
@@ -321,6 +358,8 @@ screen its old limit plus the line (`FOOTER`).
   the checks by 37-44 px): the credits line under the buttons, plus the replay link on sides 2 and
   up. The buttons themselves are above the fold. Fixing it means a design decision (hide the line
   while copying, move or drop the link, or a shorter stage).
+- The flat view shows the side the child looks at, so a back-layer turn on the 3x3 shows the top of
+  the cube instead (with a tag): a change of view mid-solve. The 2x2 never has one.
 - Camera color reading was tuned on four photos. Red vs orange and glare are the weak spots.
 - Not tested on a real iPhone or Android device; all browser testing was headless Chromium with
   phone-sized viewports, light and dark mode, 360x640 to 768x1024.
@@ -377,3 +416,9 @@ Built on 2026-10-31 in one Claude chat, in this order:
    screen, a light/dark toggle, the language switch moved beside it at the top right (Start over
    leaves the welcome header), and the language picked from the phone until the switch is tapped.
    Picked from four mockups shown in the cmux browser. README rewritten with phone screenshots.
+10. 2026-11-06, Claude Code, branch `flat`: the hold and turn screens show one side of the cube flat
+    instead of the 3D cube, because Max's six-year-old could not follow the 3D turns: the moving
+    layer slides the way the arrow points, beside a small picture of the side after the turn. Max
+    picked "slide, with After" from four mockups (slide, now-and-after, slide-with-after, hand) in
+    the cmux browser. `src/flat.js` is checked against both cube models in Node; the browser flows
+    check the screens in every language.

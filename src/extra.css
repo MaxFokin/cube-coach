@@ -49,6 +49,40 @@
 .credits svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
 .credits .dot { opacity: .45; }
 
+/* The flat view: on the hold and turn screens the stage shows one side of the cube flat, the same
+   grid as the copying screens, instead of the 3D cube; flat.js decides which side and which layer.
+   The moving layer is a strip of stickers sliding under a window, and a small After picture sits
+   beside it. Left-to-right like the stage it sits in. */
+.app[data-screen="hold"] .scene, .app[data-screen="move"] .scene,
+.app[data-screen="hold"] .floor, .app[data-screen="move"] .floor { display: none; }
+.flat { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; gap: 18px; pointer-events: none; transition: opacity .22s ease; }
+.app[data-screen="hold"] .flat, .app[data-screen="move"] .flat { display: flex; }
+.flat.fade { opacity: 0; }
+.flat-side { position: relative; width: min(64vw, calc(var(--stage) - 22px)); }
+.flat-after { margin: 0; display: grid; gap: 9px; justify-items: center; width: min(24vw, 92px); font: 600 16px/1 var(--display); color: var(--ink); }
+.flat-grid {
+  --n: 2; --p: 11px; --g: 11px; position: relative; width: 100%; aspect-ratio: 1; box-sizing: border-box; padding: var(--p);
+  display: grid; grid-template-columns: repeat(var(--n), 1fr); grid-template-rows: repeat(var(--n), 1fr); gap: var(--g);
+  background: #0D0E12; border-radius: 11%;
+}
+.flat-grid.n3 { --n: 3; --p: 9px; --g: 7px; }
+.flat-after .flat-grid { --p: 6px; --g: 6px; border-radius: 15%; }
+.flat-after .flat-grid.n3 { --p: 5px; --g: 4px; }
+.flat-cell { border-radius: 16%; background: var(--c); box-shadow: inset 0 -.3em 0 rgba(0, 0, 0, .14), inset 0 .15em 0 rgba(255, 255, 255, .3); }
+.flat-after .flat-cell { border-radius: 20%; box-shadow: inset 0 -.18em 0 rgba(0, 0, 0, .14); }
+.flat-win { position: relative; overflow: hidden; }
+.flat-win.v { grid-row: 1 / -1; }
+.flat-win.h { grid-column: 1 / -1; }
+.flat-strip { display: grid; gap: var(--g); }
+.flat-win.v .flat-strip { height: 100%; grid-template-columns: 100%; grid-auto-rows: calc((100% - (var(--n) - 1) * var(--g)) / var(--n)); }
+.flat-win.h .flat-strip { width: 100%; height: 100%; grid-template-rows: 100%; grid-auto-flow: column; grid-auto-columns: calc((100% - (var(--n) - 1) * var(--g)) / var(--n)); }
+.flat-arrow { position: absolute; inset: 0; transition: opacity .2s ease; }
+.flat-arrow.hide { opacity: 0; }
+.flat-tag {
+  position: absolute; left: 50%; top: -14px; transform: translateX(-50%); white-space: nowrap;
+  font: 600 14px/1 var(--display); color: #17191F; background: var(--yellow); border: 2px solid #17191F; border-radius: 999px; padding: 5px 12px;
+}
+
 /* 3x3 faces */
 .face-grid.n3 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 7px; padding: 9px; }
 .face-grid.n3 .cell { border-radius: 11px; font-size: 22px; box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .14), inset 0 3px 0 rgba(255, 255, 255, .3); }

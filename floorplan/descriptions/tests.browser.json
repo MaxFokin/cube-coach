@@ -10,7 +10,7 @@
     },
     "tests/e2e/flows.py": {
       "name": "Solve flow tests",
-      "description": "Solves the known 2x2 in every language and a 3x3 in a phone-sized browser, checking the switch, the theme toggle, the credits line, the phone's language, reloads, Start over and blocked storage."
+      "description": "Solves the known 2x2 in every language and a 3x3 in a phone-sized browser, checking the switch, the theme toggle, the credits line, the phone's language, reloads, Start over, blocked storage, and that each turn is shown flat: the arrow, the sliding layer, the After picture, and the top-of-the-cube tag for back turns only."
     },
     "tests/e2e/screens.py": {
       "name": "Screen walk",

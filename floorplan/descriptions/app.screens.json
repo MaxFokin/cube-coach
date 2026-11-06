@@ -9,8 +9,8 @@
       "description": "Starts the app: applies the saved language, restores progress, builds the cube, and runs the two-tap Start over button."
     },
     "src/ui.js": {
-      "name": "Screens and 3D cube",
-      "description": "Draws every screen, animates the 3D cube and its arrows, saves progress on the phone, and loads the 3x3 solver when it is needed."
+      "name": "Screens and flat turns",
+      "description": "Draws every screen, shows each turn flat with its sliding layer, arrow and After picture, spins the 3D cube on the start and check screens, saves progress on the phone, and loads the 3x3 solver when it is needed."
     }
   }
 }
