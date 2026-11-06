@@ -150,6 +150,8 @@ function stopLoops() {
   clearTurns();
   sceneEl.classList.remove('fade');
   flatEl.classList.remove('fade');
+  delete appEl.dataset.fly;
+  flatEl.style.opacity = '';
 }
 async function playTurn(move, ms, alive) {
   const anims = turn(move, ms);
@@ -258,6 +260,35 @@ async function demoLoop() {
     if (!(await run(seq.slice().reverse().map(invMove)))) return;
     await sleep(1800); if (!alive()) return;
   }
+}
+
+// ===== Flying into the side: on the way to the hold screen the 3D cube, as it was, turns to face the
+// front, then zooms into it until it is the flat side, which fades in and takes over =====
+const FRONT = { vx: 0, vy: 0, ax: 0, ay: 0 };
+async function flyIn(state) {
+  const id = ++loopId;
+  const alive = () => id === loopId;
+  appEl.dataset.fly = '';
+  paint(state);
+  flatEl.style.opacity = '0';
+  drawFlat(state);
+  setOrient(FRONT, true);
+  await sleep(2100); if (!alive()) return;
+  // The cube's front face on screen and the flat side's box: zoom the one onto the other.
+  const faces = cubies.filter((_, ci) => model.positions[ci][2] > 0).map((el) => el._stk[2].parentElement.getBoundingClientRect());
+  const left = Math.min(...faces.map((r) => r.left)), right = Math.max(...faces.map((r) => r.right));
+  const top = Math.min(...faces.map((r) => r.top)), bottom = Math.max(...faces.map((r) => r.bottom));
+  const side = flatEl.querySelector('.flat-grid').getBoundingClientRect();
+  const k = side.width / (right - left), dx = side.left + side.width / 2 - (left + right) / 2, dy = side.top + side.height / 2 - (top + bottom) / 2;
+  const cur = getComputedStyle(sceneEl).transform, from = cur === 'none' ? '' : cur;
+  const zoom = sceneEl.animate([{ transform: from || 'none' }, { transform: `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) ${from} scale(${k.toFixed(3)})` }],
+    { duration: 1600, easing: 'cubic-bezier(.4, 0, .2, 1)', fill: 'forwards' });
+  const fade = flatEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 700, delay: 900, easing: 'ease', fill: 'forwards' });
+  live.push(zoom, fade);
+  if (!(await zoom.finished.then(() => true, () => false)) || !alive()) return;
+  delete appEl.dataset.fly;
+  flatEl.style.opacity = '';
+  clearTurns();
 }
 
 // ===== Turn arrows: on the flat side (the front, or the top for back turns) and in the move icon =====
@@ -528,8 +559,10 @@ function finishSides() {
   else go('oops');
 }
 
+let shownScreen = null, prevScreen = null;
 function render(animate) {
   stopLoops();
+  prevScreen = shownScreen; shownScreen = app.screen;
   clearTimeout(orientTimer);
   spinnerEl.classList.remove('spinning');
   useModel(app.cube);
@@ -801,8 +834,8 @@ function screenSolverError(animate) {
   on('retry', () => go('solving'));
 }
 
-function screenHold() {
-  drawFlat(app.analysis.state);
+function screenHold(animate) {
+  if (animate && !reduced && prevScreen !== 'move') flyIn(app.analysis.state); else drawFlat(app.analysis.state);
   const note = app.note ? `<p class="note">${app.note}</p>` : '';
   if (!app.solution.length) {
     panelEl.innerHTML = `

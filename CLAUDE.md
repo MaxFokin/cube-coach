@@ -234,6 +234,15 @@ the After picture says it. The stage keeps its height (`--stage` in `base.css`);
 `min(64vw, stage - 22px)`: 211 px at 375x667, 250 px at 390x844, 202 px at 360x640, the After
 picture 92 px. The hold screen shows the front alone, so the child can match the real cube first.
 
+On the way to the hold screen (`screenHold` with `animate`, not back from a turn, not with reduced
+motion) `flyIn` keeps the 3D cube as it was (the bottom check, or the solving screen), turns it to
+face the front over 2 s (`.app[data-fly]` keeps the scene visible and slows the cube's transition),
+then zooms the scene for 1.6 s, measured so the cube's front face lands exactly on the flat grid,
+while the flat side fades in over the last 0.7 s; then `data-fly` goes and the flat side alone
+remains, about 3.7 s in all. Max asked for this slow "move into the side, then zoom in" on 2026-11-06.
+Any render cuts it short (I'm ready mid-fly): `stopLoops` drops `data-fly`, the inline opacity and
+the animations, which are in `live` like the turns.
+
 ### 3x3 solver
 
 Loaded only when a 3x3 is picked, from jsDelivr, pinned:
@@ -323,7 +332,9 @@ only the layer moves, and it slides off that side the way the arrow points. The 
 front as it is; a turn screen hides the 3D cube and shows the arrow, the After picture (the front
 after the turn) and the layer sliding (the photo cube's first turn: the top row to the right, new
 stickers from the left); the top-of-the-cube tag shows for back turns only; with reduced motion
-nothing slides; the 3D cube is back on the done screen. Holding the brand on a copying screen fills a
+nothing slides; the 3D cube is back on the done screen. On the way to the hold screen the 3D cube
+flies into the flat side (`data-fly` for about 3.7 s, then the side alone); I'm ready mid-fly lands on
+the turn screen at once, back from a turn shows no fly, and reduced motion skips it. Holding the brand on a copying screen fills a
 random cube that solves (both sizes); a short hold, or a hold on the welcome screen, does nothing.
 
 Layout, measured in headless Chromium with realistic entries (page height / viewport height). The
@@ -429,4 +440,5 @@ Built on 2026-10-31 in one Claude chat, in this order:
     picked "slide, with After" from four mockups (slide, now-and-after, slide-with-after, hand) in
     the cmux browser. `src/flat.js` is checked against both cube models in Node; the browser flows
     check the screens in every language. Same day: the hidden press-and-hold on the brand that fills
-    a random cube, for testing.
+    a random cube, for testing, and the slow fly from the 3D cube into the flat side on the way to
+    the hold screen.

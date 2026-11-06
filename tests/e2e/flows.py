@@ -55,9 +55,15 @@ async def strip_x(page):
 # cube is U': the top row slides to the right, and the new stickers come in from the left.
 async def check_flat(page, code, hold=False):
     assert await page.is_visible('.flat .flat-grid'), 'the side is shown flat'
-    assert not await page.is_visible('#scene'), 'the 3D cube is away'
+    assert hold or not await page.is_visible('#scene'), 'the 3D cube is away'
     assert await direction(page, '.flat') == 'ltr', 'the flat side never mirrors'
     if hold:
+        # On the way in, the 3D cube turns to face the front and zooms into it, then the flat side alone remains.
+        assert await page.get_attribute('#app', 'data-fly') is not None, 'the 3D cube flies into the side on the way to the hold screen'
+        assert await page.is_visible('#scene'), 'the 3D cube still shows while it turns to the front and zooms in'
+        await page.wait_for_timeout(4300)
+        assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'after the fly the flat side alone remains'
+        assert await page.evaluate("getComputedStyle(document.querySelector('.flat')).opacity") == '1'
         assert await flat_cells(page, '.flat') == 'WGYO', 'the hold screen shows the front as it is'
         assert not await page.query_selector('.flat-arrow') and not await page.query_selector('.flat-after'), 'no arrow and no After picture before the first turn'
         return
@@ -76,7 +82,9 @@ async def flat_still(browser):
     page, errors = await new_page(browser, reduced_motion='reduce')
     await page.tap('#pick2'); await page.wait_for_timeout(200)
     await paint(page, MAX)
-    await page.tap('#yes'); await page.tap('#yes'); await page.tap('#ready'); await page.wait_for_timeout(200)
+    await page.tap('#yes'); await page.tap('#yes'); await page.wait_for_timeout(150)
+    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'with reduced motion the side just shows, no fly'
+    await page.tap('#ready'); await page.wait_for_timeout(200)
     x0 = await strip_x(page); await page.wait_for_timeout(2600)
     assert await strip_x(page) == x0, 'with reduced motion nothing slides; the After picture tells'
     assert await page.is_visible('.flat-after .flat-grid') and await page.query_selector('.flat-arrow svg')
@@ -90,6 +98,23 @@ async def hold_brand(page, ms):
     box = await page.evaluate("(() => { const r = document.querySelector('.brand').getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })()")
     await page.mouse.move(box[0], box[1]); await page.mouse.down(); await page.wait_for_timeout(ms); await page.mouse.up()
     await page.wait_for_timeout(300)
+
+# Tapping I'm ready mid-fly cuts it short, and going back to the hold screen from a turn shows no fly.
+async def fly_cut(browser):
+    page, errors = await new_page(browser)
+    await page.tap('#pick2'); await page.wait_for_timeout(200)
+    await paint(page, MAX)
+    await page.tap('#yes'); await page.tap('#yes'); await page.wait_for_timeout(600)
+    assert await page.get_attribute('#app', 'data-fly') is not None
+    await page.tap('#ready'); await page.wait_for_timeout(300)
+    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'I\'m ready mid-fly lands on the turn screen with the flat side'
+    assert await page.evaluate("getComputedStyle(document.querySelector('.flat')).opacity") == '1' and await page.query_selector('.flat-strip')
+    await page.tap('#back'); await page.wait_for_timeout(150)
+    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'back to the hold screen from a turn: no fly'
+    assert await flat_cells(page, '.flat') == 'WGYO'
+    assert not errors, errors
+    print('fly into the side: ok')
+    await page.context.close()
 
 async def cheat(browser):
     page, errors = await new_page(browser)
@@ -237,6 +262,7 @@ async def main():
         await locale_pick(browser)
         await flat_still(browser)
         await cheat(browser)
+        await fly_cut(browser)
 
         scr = json.loads((ROOT / 'tests' / 'fixtures' / 'generated' / 'scramble3.json').read_text())
         page, errors = await new_page(browser)
