@@ -209,13 +209,14 @@ function slideFlat(move, ms) {
   live.push(anim);
   return anim.finished.then(() => true, () => false);
 }
-async function moveLoop(before, move) {
+async function moveLoop(before, move, fly) {
   const id = ++loopId;
   const alive = () => id === loopId;
   const after = model.apply(before, move);
   const ms = move[1] === '2' ? 2300 : 1500;
   drawFlat(before, move, after);
   if (reduced) return;
+  if (fly && !(await flyIn(before, alive))) return;
   while (alive()) {
     await sleep(1200); if (!alive()) return;
     if (!(await slideFlat(move, ms)) || !alive()) return;
@@ -262,18 +263,15 @@ async function demoLoop() {
   }
 }
 
-// ===== Flying into the side: on the way to the hold screen the 3D cube, as it was, turns to face the
-// front, then zooms into it until it is the flat side, which fades in and takes over =====
+// ===== Flying into the side: on I'm ready the 3D cube, as it was on the hold screen, turns to face the
+// front, then zooms into it until it is the flat side of the first turn, which fades in and takes over =====
 const FRONT = { vx: 0, vy: 0, ax: 0, ay: 0 };
-async function flyIn(state) {
-  const id = ++loopId;
-  const alive = () => id === loopId;
+async function flyIn(state, alive) {
   appEl.dataset.fly = '';
   paint(state);
   flatEl.style.opacity = '0';
-  drawFlat(state);
   setOrient(FRONT, true);
-  await sleep(2100); if (!alive()) return;
+  await sleep(2100); if (!alive()) return false;
   // The cube's front face on screen and the flat side's box: zoom the one onto the other.
   const faces = cubies.filter((_, ci) => model.positions[ci][2] > 0).map((el) => el._stk[2].parentElement.getBoundingClientRect());
   const left = Math.min(...faces.map((r) => r.left)), right = Math.max(...faces.map((r) => r.right));
@@ -285,10 +283,11 @@ async function flyIn(state) {
     { duration: 1600, easing: 'cubic-bezier(.4, 0, .2, 1)', fill: 'forwards' });
   const fade = flatEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 700, delay: 900, easing: 'ease', fill: 'forwards' });
   live.push(zoom, fade);
-  if (!(await zoom.finished.then(() => true, () => false)) || !alive()) return;
+  if (!(await zoom.finished.then(() => true, () => false)) || !alive()) return false;
   delete appEl.dataset.fly;
   flatEl.style.opacity = '';
   clearTurns();
+  return true;
 }
 
 // ===== Turn arrows: on the flat side (the front, or the top for back turns) and in the move icon =====
@@ -835,7 +834,8 @@ function screenSolverError(animate) {
 }
 
 function screenHold(animate) {
-  if (animate && !reduced && prevScreen !== 'move') flyIn(app.analysis.state); else drawFlat(app.analysis.state);
+  paint(app.analysis.state);
+  setOrient(view('solve'), animate);
   const note = app.note ? `<p class="note">${app.note}</p>` : '';
   if (!app.solution.length) {
     panelEl.innerHTML = `
@@ -856,7 +856,7 @@ function screenHold(animate) {
 function screenMove() {
   const i = app.move, sol = app.solution, m = sol[i];
   const [title, sub] = moveText(m);
-  moveLoop(stateAt(i), m);
+  moveLoop(stateAt(i), m, prevScreen === 'hold');
   panelEl.innerHTML = `
     ${progress(sol.length, i, t('moveOf', { n: i + 1, total: sol.length }), `<span class="key" aria-label="${t('cubeCode', { m })}">${m.replace("'", '′')}</span>`)}
     <div class="move-head"><span class="move-icon">${arrowSVG(m, model.N, true)}</span><h1>${title}</h1></div>

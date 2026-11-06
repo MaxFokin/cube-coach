@@ -199,7 +199,7 @@ the previous side stays visible), `top`, `bottom`, `solve`.
 
 Turn animation (`turn`): the layer's cubies get a Web Animations rotate3d, then the state is
 repainted and the animations cancelled, so slots never move. Since 2026-11-06 only the welcome demo
-turns the 3D cube; the hold and turn screens show the flat view (next section). CSS mapping of a
+turns the 3D cube; the turn screens show the flat view (next section) and the hold screen the solve view. CSS mapping of a
 clockwise face turn: R = rotateX(+90), L = rotateX(-90), U = rotateY(-90), D = rotateY(+90),
 F = rotateZ(+90), B = rotateZ(-90).
 
@@ -207,11 +207,12 @@ Never put `opacity` or `filter` on `.cube`, `.spinner` or `.cubie`: it flattens 
 `.scene` instead). Never put `overflow` other than `visible` or `clip` on an ancestor with
 `transform-style: preserve-3d` (`clip` is fine and is what `.stage` and `body` use).
 
-### The flat view (hold and turn screens)
+### The flat view (turn screens)
 
-Max's six-year-old could not follow the 3D turns, so since 2026-11-06 the `hold` and `move` screens
-show one side of the cube flat (`#flat` inside the stage; CSS hides `.scene` and `.floor` on those two
-screens, and the 3D cube is back on `done`). Max picked "slide, with After" from four mockups (slide,
+Max's six-year-old could not follow the 3D turns, so since 2026-11-06 the `move` screens show one
+side of the cube flat (`#flat` inside the stage; CSS hides `.scene` and `.floor` there, and the 3D cube
+is back on `done`). The `hold` screen keeps the 3D cube in the solve view, so the child can match the
+real cube before the first turn (Max's call the same day). Max picked "slide, with After" from four mockups (slide,
 now-and-after, slide-with-after, a pushing hand) in the cmux browser.
 
 `flatTurn(move, N)` in `flat.js` says what to show: the face (`F` for every turn but the back
@@ -232,16 +233,17 @@ slide the strip is laid out the other way round and starts shifted. `moveLoop`: 
 the result held 1.6 s with the arrow hidden, a fade, and again. With reduced motion nothing slides;
 the After picture says it. The stage keeps its height (`--stage` in `base.css`); the side is
 `min(64vw, stage - 22px)`: 211 px at 375x667, 250 px at 390x844, 202 px at 360x640, the After
-picture 92 px. The hold screen shows the front alone, so the child can match the real cube first.
+picture 92 px.
 
-On the way to the hold screen (`screenHold` with `animate`, not back from a turn, not with reduced
-motion) `flyIn` keeps the 3D cube as it was (the bottom check, or the solving screen), turns it to
-face the front over 2 s (`.app[data-fly]` keeps the scene visible and slows the cube's transition),
-then zooms the scene for 1.6 s, measured so the cube's front face lands exactly on the flat grid,
-while the flat side fades in over the last 0.7 s; then `data-fly` goes and the flat side alone
-remains, about 3.7 s in all. Max asked for this slow "move into the side, then zoom in" on 2026-11-06.
-Any render cuts it short (I'm ready mid-fly): `stopLoops` drops `data-fly`, the inline opacity and
-the animations, which are in `live` like the turns.
+On I'm ready (`screenMove` passes `fly` to `moveLoop` when the previous screen was `hold`: not on a
+reload, not back from another turn, and never with reduced motion) `flyIn` keeps the 3D cube as it
+was on the hold screen, turns it to face the front over 2 s (`.app[data-fly]` keeps the scene visible
+on the turn screen and slows the cube's transition), then zooms the scene for 1.6 s, measured so the
+cube's front face lands exactly on the flat grid, while the first turn's flat view (already drawn)
+fades in over the last 0.7 s; then `data-fly` goes, the flat side alone remains and the layer starts
+sliding, about 3.7 s in all. Max asked for this slow "move into the side, then zoom in" on 2026-11-06.
+Any render cuts it short (I did it mid-fly): `stopLoops` drops `data-fly`, the inline opacity and the
+animations, which are in `live` like the turns.
 
 ### 3x3 solver
 
@@ -328,13 +330,14 @@ toggle share the header's right group and Start over is gone from the welcome he
 flips `data-theme`, survives a reload and Start over, and follows the phone until tapped; the
 credits line is on every screen with the same three links, words, order, font and direction in
 every language. The flat view's table matches both cube models for all 27 moves: on the shown side
-only the layer moves, and it slides off that side the way the arrow points. The hold screen shows the
-front as it is; a turn screen hides the 3D cube and shows the arrow, the After picture (the front
+only the layer moves, and it slides off that side the way the arrow points. A turn screen hides the
+3D cube and shows the arrow, the After picture (the front
 after the turn) and the layer sliding (the photo cube's first turn: the top row to the right, new
 stickers from the left); the top-of-the-cube tag shows for back turns only; with reduced motion
-nothing slides; the 3D cube is back on the done screen. On the way to the hold screen the 3D cube
-flies into the flat side (`data-fly` for about 3.7 s, then the side alone); I'm ready mid-fly lands on
-the turn screen at once, back from a turn shows no fly, and reduced motion skips it. Holding the brand on a copying screen fills a
+nothing slides; the 3D cube is back on the done screen. The hold screen shows the 3D cube; I'm ready
+flies it into the flat side (`data-fly` for about 3.7 s, then the side alone); I did it mid-fly lands
+on the next turn at once, back from a turn shows no fly, back on the hold screen the 3D cube is there
+again, and reduced motion skips the fly. Holding the brand on a copying screen fills a
 random cube that solves (both sizes); a short hold, or a hold on the welcome screen, does nothing.
 
 Layout, measured in headless Chromium with realistic entries (page height / viewport height). The
@@ -434,11 +437,11 @@ Built on 2026-10-31 in one Claude chat, in this order:
    screen, a light/dark toggle, the language switch moved beside it at the top right (Start over
    leaves the welcome header), and the language picked from the phone until the switch is tapped.
    Picked from four mockups shown in the cmux browser. README rewritten with phone screenshots.
-10. 2026-11-06, Claude Code, branch `flat`: the hold and turn screens show one side of the cube flat
+10. 2026-11-06, Claude Code, branch `flat`: the turn screens show one side of the cube flat
     instead of the 3D cube, because Max's six-year-old could not follow the 3D turns: the moving
     layer slides the way the arrow points, beside a small picture of the side after the turn. Max
     picked "slide, with After" from four mockups (slide, now-and-after, slide-with-after, hand) in
     the cmux browser. `src/flat.js` is checked against both cube models in Node; the browser flows
     check the screens in every language. Same day: the hidden press-and-hold on the brand that fills
-    a random cube, for testing, and the slow fly from the 3D cube into the flat side on the way to
-    the hold screen.
+    a random cube, for testing, and the slow fly from the 3D cube on the hold screen into the flat side
+    when I'm ready is tapped.

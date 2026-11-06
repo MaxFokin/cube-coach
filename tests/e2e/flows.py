@@ -50,23 +50,22 @@ async def flat_cells(page, sel):
 async def strip_x(page):
     return await page.evaluate("new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.flat-strip')).transform).m41")
 
-# The hold screen shows the front flat; a turn screen shows it with the arrow on the moving layer,
-# the layer sliding, and a small picture of the front after the turn. The first turn of the photo
-# cube is U': the top row slides to the right, and the new stickers come in from the left.
+# The hold screen keeps the 3D cube so the child can match the real one. I'm ready flies the cube into
+# the flat side: it turns to face the front and zooms in, then the first turn's flat view takes over:
+# the arrow on the moving layer, the layer sliding, and a small picture of the front after the turn.
+# The first turn of the photo cube is U': the top row slides to the right, new stickers from the left.
 async def check_flat(page, code, hold=False):
-    assert await page.is_visible('.flat .flat-grid'), 'the side is shown flat'
-    assert hold or not await page.is_visible('#scene'), 'the 3D cube is away'
-    assert await direction(page, '.flat') == 'ltr', 'the flat side never mirrors'
     if hold:
-        # On the way in, the 3D cube turns to face the front and zooms into it, then the flat side alone remains.
-        assert await page.get_attribute('#app', 'data-fly') is not None, 'the 3D cube flies into the side on the way to the hold screen'
-        assert await page.is_visible('#scene'), 'the 3D cube still shows while it turns to the front and zooms in'
-        await page.wait_for_timeout(4300)
-        assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'after the fly the flat side alone remains'
-        assert await page.evaluate("getComputedStyle(document.querySelector('.flat')).opacity") == '1'
-        assert await flat_cells(page, '.flat') == 'WGYO', 'the hold screen shows the front as it is'
-        assert not await page.query_selector('.flat-arrow') and not await page.query_selector('.flat-after'), 'no arrow and no After picture before the first turn'
+        assert await page.is_visible('#scene') and await page.get_attribute('#app', 'data-fly') is None, 'the hold screen shows the 3D cube, no fly yet'
+        assert not await page.is_visible('.flat'), 'no flat side before I\'m ready'
         return
+    assert await page.get_attribute('#app', 'data-fly') is not None, 'I\'m ready flies the 3D cube into the side'
+    assert await page.is_visible('#scene'), 'the 3D cube still shows while it turns to the front and zooms in'
+    await page.wait_for_timeout(4300)
+    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'after the fly the flat side alone remains'
+    assert await page.evaluate("getComputedStyle(document.querySelector('.flat')).opacity") == '1'
+    assert await page.is_visible('.flat .flat-grid'), 'the side is shown flat'
+    assert await direction(page, '.flat') == 'ltr', 'the flat side never mirrors'
     assert await page.query_selector('.flat-arrow svg'), 'the arrow sits on the flat side'
     label = (await page.text_content('.flat-after figcaption')).strip()
     if code == 'en': assert label == 'After', label
@@ -83,8 +82,9 @@ async def flat_still(browser):
     await page.tap('#pick2'); await page.wait_for_timeout(200)
     await paint(page, MAX)
     await page.tap('#yes'); await page.tap('#yes'); await page.wait_for_timeout(150)
-    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'with reduced motion the side just shows, no fly'
+    assert await page.is_visible('#scene'), 'the hold screen shows the 3D cube'
     await page.tap('#ready'); await page.wait_for_timeout(200)
+    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'with reduced motion the side just shows, no fly'
     x0 = await strip_x(page); await page.wait_for_timeout(2600)
     assert await strip_x(page) == x0, 'with reduced motion nothing slides; the After picture tells'
     assert await page.is_visible('.flat-after .flat-grid') and await page.query_selector('.flat-arrow svg')
@@ -99,19 +99,23 @@ async def hold_brand(page, ms):
     await page.mouse.move(box[0], box[1]); await page.mouse.down(); await page.wait_for_timeout(ms); await page.mouse.up()
     await page.wait_for_timeout(300)
 
-# Tapping I'm ready mid-fly cuts it short, and going back to the hold screen from a turn shows no fly.
+# Tapping I did it mid-fly cuts it short; going back to a turn shows no fly, and back to the hold screen
+# the 3D cube is there again, ready to fly once more.
 async def fly_cut(browser):
     page, errors = await new_page(browser)
     await page.tap('#pick2'); await page.wait_for_timeout(200)
     await paint(page, MAX)
-    await page.tap('#yes'); await page.tap('#yes'); await page.wait_for_timeout(600)
+    await page.tap('#yes'); await page.tap('#yes'); await page.tap('#ready'); await page.wait_for_timeout(600)
     assert await page.get_attribute('#app', 'data-fly') is not None
-    await page.tap('#ready'); await page.wait_for_timeout(300)
-    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'I\'m ready mid-fly lands on the turn screen with the flat side'
+    await page.tap('#did'); await page.wait_for_timeout(300)
+    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'I did it mid-fly lands on the next turn with the flat side'
     assert await page.evaluate("getComputedStyle(document.querySelector('.flat')).opacity") == '1' and await page.query_selector('.flat-strip')
     await page.tap('#back'); await page.wait_for_timeout(150)
-    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'back to the hold screen from a turn: no fly'
-    assert await flat_cells(page, '.flat') == 'WGYO'
+    assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'back to the first turn: no fly'
+    await page.tap('#back'); await page.wait_for_timeout(150)
+    assert await page.is_visible('#scene') and not await page.is_visible('.flat'), 'back on the hold screen: the 3D cube again'
+    await page.tap('#ready'); await page.wait_for_timeout(600)
+    assert await page.get_attribute('#app', 'data-fly') is not None, 'I\'m ready flies again'
     assert not errors, errors
     print('fly into the side: ok')
     await page.context.close()

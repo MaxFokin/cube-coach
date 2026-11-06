@@ -29,7 +29,7 @@ async def main():
         await page.tap('#restart'); await page.tap('#restart'); await page.wait_for_timeout(300)
         await page.tap('#theme'); await page.tap('#pick2'); await page.wait_for_timeout(300)
         await paint(page, MAX)
-        await page.tap('#yes'); await page.tap('#yes'); await page.tap('#ready'); await page.wait_for_timeout(500)
+        await page.tap('#yes'); await page.tap('#yes'); await page.tap('#ready'); await page.wait_for_timeout(4800)  # after the fly into the side
         await page.screenshot(path=str(OUT / 'move.png'))
         await browser.close()
     for f in sorted(OUT.glob('*.png')): print(f.relative_to(OUT.parents[1]), f.stat().st_size // 1024, 'KB')

@@ -46,7 +46,7 @@ first time it is picked and takes a few seconds to warm up; after that it is ins
 ## Under the hood
 
 The whole app is one file, `index.html`, built from `src/` by `build.py`: plain HTML, CSS and
-JavaScript, no framework, no build step beyond concatenation. The 3D cube on the start and check
+JavaScript, no framework, no build step beyond concatenation. The 3D cube on the start, check and hold
 screens is pure CSS; the turns are shown flat.
 
 | File | What it does |
