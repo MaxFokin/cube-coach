@@ -52,7 +52,8 @@ async def strip_x(page):
 
 # The hold screen keeps the 3D cube so the child can match the real one. I'm ready flies the cube into
 # the flat side: it turns to face the front and zooms in, then the first turn's flat view takes over:
-# the arrow on the moving layer, the layer sliding, and a small picture of the front after the turn.
+# the arrow on the moving layer, the layer sliding, and two small pictures beside it: the front as it
+# is (Before) above the front after the turn (After).
 # The first turn of the photo cube is U': the top row slides to the right, new stickers from the left.
 async def check_flat(page, code, hold=False):
     if hold:
@@ -67,11 +68,14 @@ async def check_flat(page, code, hold=False):
     assert await page.is_visible('.flat .flat-grid'), 'the side is shown flat'
     assert await direction(page, '.flat') == 'ltr', 'the flat side never mirrors'
     assert await page.query_selector('.flat-arrow svg'), 'the arrow sits on the flat side'
-    label = (await page.text_content('.flat-after figcaption')).strip()
-    if code == 'en': assert label == 'After', label
-    elif code == 'he': assert not re.search(r'[A-Za-z]', label), label
-    else: assert label != 'After', label
+    labels = [(await page.text_content(f'.flat-{w} figcaption')).strip() for w in ('before', 'after')]
+    if code == 'en': assert labels == ['Before', 'After'], labels
+    elif code == 'he': assert not re.search(r'[A-Za-z]', ''.join(labels)), labels
+    else: assert labels[0] != 'Before' and labels[1] != 'After', labels
+    assert await flat_cells(page, '.flat-before') == 'WGYO', 'the Before picture is the front as it is'
     assert await flat_cells(page, '.flat-after') == 'ORYO', 'the After picture is the front after the turn'
+    before_box, after_box = [await page.evaluate(f"document.querySelector('.flat-{w}').getBoundingClientRect().toJSON()") for w in ('before', 'after')]
+    assert before_box['bottom'] <= after_box['top'] and abs(before_box['left'] - after_box['left']) < 2, 'Before sits above After'
     x0 = await strip_x(page)
     assert x0 < 0, f'a slide to the right starts with the new stickers hidden on the left: {x0}'
     await page.wait_for_timeout(2000)
@@ -112,7 +116,7 @@ async def fly_cut(browser):
     assert await page.evaluate("getComputedStyle(document.querySelector('.flat')).opacity") == '1' and await page.query_selector('.flat-strip')
     # At the end of a cycle only the big side fades out before it shows again; the After picture stays.
     await page.wait_for_function("document.querySelector('.flat-side.fade') !== null", timeout=9000)  # the class lives 260 ms; a selector wait misses it
-    assert await page.evaluate("getComputedStyle(document.querySelector('.flat-after')).opacity") == '1', 'the After picture stays while the side resets'
+    assert await page.evaluate("getComputedStyle(document.querySelector('.flat-after')).opacity") == '1' and await page.is_visible('.flat-before'), 'the small pictures stay while the side resets'
     assert await page.evaluate("getComputedStyle(document.querySelector('.flat')).opacity") == '1'
     await page.tap('#back'); await page.wait_for_timeout(150)
     assert await page.get_attribute('#app', 'data-fly') is None and not await page.is_visible('#scene'), 'back to the first turn: no fly'

@@ -12,7 +12,7 @@
 <p align="center">
   <img src="docs/screenshots/welcome.png" width="230" alt="The welcome screen with a spinning cube">
   <img src="docs/screenshots/side.png" width="230" alt="Copying a side of the 3x3 by tapping colors">
-  <img src="docs/screenshots/move.png" width="230" alt="A turn shown flat: the top row slides to the right, beside the side after the turn, in dark mode">
+  <img src="docs/screenshots/move.png" width="230" alt="A turn shown flat: the top row slides to the right, beside the side before and after the turn, in dark mode">
 </p>
 
 ## How it works
@@ -21,8 +21,8 @@
 2. **Let it check.** The app makes sure the copy is a real cube, points at a wrong square, and quietly
    fixes a side that was copied turned around.
 3. **Follow the turns.** Every turn is shown flat, on the side the child is looking at: the layer
-   slides the way the arrow points, a small picture shows the side after the turn, and the words say
-   it like a coach. Progress is saved on the phone, so a closed browser picks up at the same turn.
+   slides the way the arrow points, small pictures show the side before and after the turn, and the
+   words say it like a coach. Progress is saved on the phone, so a closed browser picks up at the same turn.
 
 ## Features
 

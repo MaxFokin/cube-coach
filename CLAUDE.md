@@ -3,7 +3,7 @@
 Cube Coach is a one-file web app that walks a child through solving a 2x2 or 3x3 Rubik's cube. The
 child copies the cube's colors (by tapping or with the camera), the app checks that the copy is a real
 cube, works out a short solution, and shows every turn flat, on the side the child is looking at:
-the layer slides the way the arrow points, beside a small picture of the side after the turn.
+the layer slides the way the arrow points, beside small pictures of the side before and after.
 It speaks English, Hebrew and Polish, opening in the phone's language, with a switch top right on the
 welcome screen beside a light/dark toggle; a credits line (GitHub, LinkedIn, the repo) closes every screen.
 Max (GitHub `MaxFokin`) built it for Max's son in a Claude chat on 2026-10-31. On 2026-11-04 Claude
@@ -225,16 +225,18 @@ the layer slides off that side the way the arrow points, and a front turn rotate
 
 `drawFlat(before, move, after)` in `ui.js` builds the side as `.flat-grid` (the same look as the
 copying grids, `.flat-cell` per sticker), the arrow (`arrowSVG`, shared with the move icon) over it,
-and the `.flat-after` picture (the side after the turn, labelled `after`). The moving layer is a
+and two small pictures in a column beside it (`.flat-pics`): the side as it is (`.flat-before`,
+labelled `before`) above the side after the turn (`.flat-after`, `after`); Max picked the pair over
+the After alone from a mockup on 2026-11-07. The moving layer is a
 `.flat-win` window over its row or column with a `.flat-strip` inside: the layer's stickers as they
 are, then after each quarter turn, so the new stickers come in from the other end; for a down or right
 slide the strip is laid out the other way round and starts shifted. `moveLoop`: arrow 1.2 s, slide
 1.5 s (2.3 s for a double turn, which travels two layers; a front turn rotates the whole grid instead),
-the result held 1.6 s with the arrow hidden, then the side fades and starts again while the After
-picture stays put (a bug Max saw on 2026-11-06: the whole stage used to fade). With reduced motion nothing slides;
+the result held 1.6 s with the arrow hidden, then the side fades and starts again while the small
+pictures stay put (a bug Max saw on 2026-11-06: the whole stage used to fade). With reduced motion nothing slides;
 the After picture says it. The stage keeps its height (`--stage` in `base.css`); the side is
-`min(64vw, stage - 22px)`: 211 px at 375x667, 250 px at 390x844, 202 px at 360x640, the After
-picture 92 px.
+`min(64vw, stage - 22px)`: 211 px at 375x667, 250 px at 390x844, 202 px at 360x640, the two small
+pictures 72 px (the pair is 198 px tall, inside the 224 px stage of a 360x640 phone).
 
 On I'm ready (`screenMove` passes `fly` to `moveLoop` when the previous screen was `hold`: not on a
 reload, not back from another turn, and never with reduced motion) `flyIn` keeps the 3D cube as it
@@ -332,9 +334,9 @@ flips `data-theme`, survives a reload and Start over, and follows the phone unti
 credits line is on every screen with the same three links, words, order, font and direction in
 every language. The flat view's table matches both cube models for all 27 moves: on the shown side
 only the layer moves, and it slides off that side the way the arrow points. A turn screen hides the
-3D cube and shows the arrow, the After picture (the front
+3D cube and shows the arrow, the Before and After pictures (the front as it is, above the front
 after the turn) and the layer sliding (the photo cube's first turn: the top row to the right, new
-stickers from the left); the top-of-the-cube tag shows for back turns only; the After picture stays
+stickers from the left); the top-of-the-cube tag shows for back turns only; the small pictures stay
 while the side resets; with reduced motion nothing slides; the 3D cube is back on the done screen. The hold screen shows the 3D cube; I'm ready
 flies it into the flat side (`data-fly` for about 3.7 s, then the side alone); I did it mid-fly lands
 on the next turn at once, back from a turn shows no fly, back on the hold screen the 3D cube is there
@@ -445,4 +447,4 @@ Built on 2026-10-31 in one Claude chat, in this order:
     the cmux browser. `src/flat.js` is checked against both cube models in Node; the browser flows
     check the screens in every language. Same day: the hidden press-and-hold on the brand that fills
     a random cube, for testing, and the slow fly from the 3D cube on the hold screen into the flat side
-    when I'm ready is tapped.
+    when I'm ready is tapped. On 2026-11-07 the After picture got a Before above it.

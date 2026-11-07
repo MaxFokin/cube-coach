@@ -626,10 +626,15 @@ const STRINGS = {
     he: 'עשיתי',
     pl: 'Zrobione',
   },
+  before: {
+    en: 'Before',
+    he: 'לפני',
+    pl: 'Przed',
+  },
   after: {
     en: 'After',
     he: 'אחרי',
-    pl: 'Potem',
+    pl: 'Po',
   },
   topTag: {
     en: 'Top of the cube',

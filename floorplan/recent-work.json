@@ -4,7 +4,7 @@
     {
       "title": "Turns shown flat",
       "request": "My 6-year-old has a hard time following the 3D cube animations; create some options for a 2D, one-side view for the solution part",
-      "summary": "Four mockups in the cmux browser; Max picked \"slide, with After\". The turn screens now show one side of the cube flat: the moving layer slides the way the arrow points, with a small picture of the side after the turn. The 3D cube stays on the start, check and done screens, and when I'm ready is tapped it turns to face the front and zooms into the flat side. Built on branch flat on 2026-11-06, not pushed yet.",
+      "summary": "Four mockups in the cmux browser; Max picked \"slide, with After\". The turn screens now show one side of the cube flat: the moving layer slides the way the arrow points, with small pictures of the side before and after the turn. The 3D cube stays on the start, check and done screens, and when I'm ready is tapped it turns to face the front and zooms into the flat side. Built on branch flat on 2026-11-06, not pushed yet.",
       "items": [
         {
           "ref": "src/flat.js",
@@ -14,12 +14,12 @@
         {
           "ref": "src/ui.js",
           "change": "changed",
-          "note": "Draws the flat side with the arrow and the After picture, slides the moving layer (or rotates the side for a front turn), and no longer animates the 3D cube on the turn screens, and flies the 3D cube into the flat side when I'm ready is tapped."
+          "note": "Draws the flat side with the arrow and the Before and After pictures, slides the moving layer (or rotates the side for a front turn), and no longer animates the 3D cube on the turn screens, and flies the 3D cube into the flat side when I'm ready is tapped."
         },
         {
           "ref": "src/extra.css",
           "change": "changed",
-          "note": "The look of the flat side, its sliding layer window, the arrow overlay, the After picture and the top-of-the-cube tag."
+          "note": "The look of the flat side, its sliding layer window, the arrow overlay, the Before and After pictures and the top-of-the-cube tag."
         },
         {
           "ref": "src/base.css",
@@ -34,7 +34,7 @@
         {
           "ref": "src/strings.js",
           "change": "changed",
-          "note": "Two new words in every language: After, and Top of the cube for back-layer turns."
+          "note": "Three new words in every language: Before, After, and Top of the cube for back-layer turns."
         },
         {
           "ref": "tests/flat.test.js",

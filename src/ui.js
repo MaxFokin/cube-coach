@@ -185,13 +185,15 @@ function stripTravel(turn) {
   return [strip, ((turn.kind === 'col' ? win.offsetHeight : win.offsetWidth) + gap) * (turn.twice ? 2 : 1)];
 }
 const shifted = (turn, px) => `translate${turn.kind === 'col' ? 'Y' : 'X'}(${px}px)`;
-// The side as it is with the arrow on the moving layer, and a small picture of the side after the turn.
+// The side as it is with the arrow on the moving layer, and two small pictures beside it: the side as
+// it is (Before) above the side after the turn (After).
 function drawFlat(before, move, after) {
   if (!move) { flatEl.innerHTML = `<div class="flat-side">${flatGrid(before)}</div>`; return; }
   const turn = flatTurn(move, model.N);
   flatEl.innerHTML = `<div class="flat-side">${flatGrid(before, move)}<div class="flat-arrow">${arrowSVG(move, model.N, false)}</div>` +
     `${turn.face === 'U' ? `<span class="flat-tag">${t('topTag')}</span>` : ''}</div>` +
-    `<figure class="flat-after"><figcaption>${t('after')}</figcaption>${flatGrid(after, null, turn.face)}</figure>`;
+    `<div class="flat-pics"><figure class="flat-before"><figcaption>${t('before')}</figcaption>${flatGrid(before, null, turn.face)}</figure>` +
+    `<figure class="flat-after"><figcaption>${t('after')}</figcaption>${flatGrid(after, null, turn.face)}</figure></div>`;
   const [strip, travel] = stripTravel(turn);
   if (strip && reversed(turn)) strip.style.transform = shifted(turn, -travel);
 }
